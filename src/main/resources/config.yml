@@ -1,0 +1,8 @@
+key: your-key-here
+settings:
+  path-to-download: plugins/Altenizen/.saved-audio
+  default-path: plugins/Altenizen/.saved-audio
+  max-size: 4096
+vosk:
+  model-name: none
+  model-link: none
