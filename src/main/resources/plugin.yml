@@ -1,6 +1,6 @@
 name: Altenizen
 version: '1.0-SNAPSHOT'
-main: com.marayd.denizenImplementation.DenizenImplementation
+main: org.marayd.altenizen.Altenizen
 description: "Alternative Depenizen, adds a lot of addons!"
 api-version: '1.21'
 author: maraydq

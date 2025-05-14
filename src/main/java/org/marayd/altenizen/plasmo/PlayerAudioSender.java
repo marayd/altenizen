@@ -1,4 +1,4 @@
-package com.marayd.denizenImplementation.PlasmoHook;
+package org.marayd.altenizen.plasmo;
 
 import su.plo.voice.api.audio.codec.AudioEncoder;
 import su.plo.voice.api.audio.codec.CodecException;

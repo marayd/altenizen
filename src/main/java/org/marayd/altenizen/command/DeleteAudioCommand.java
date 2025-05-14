@@ -1,11 +1,11 @@
-package com.marayd.denizenImplementation.command;
+package org.marayd.altenizen.command;
 
 import com.denizenscript.denizencore.objects.Argument;
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.scripts.ScriptEntry;
 import com.denizenscript.denizencore.scripts.commands.AbstractCommand;
 import com.denizenscript.denizencore.scripts.commands.Holdable;
-import com.marayd.denizenImplementation.DenizenImplementation;
+import org.marayd.altenizen.Altenizen;
 
 import java.io.File;
 import java.util.Objects;
@@ -32,8 +32,8 @@ public class DeleteAudioCommand extends AbstractCommand implements Holdable {
     public void execute(ScriptEntry scriptEntry) {
         String name = scriptEntry.getObject("name").toString();
         if (scriptEntry.hasObject("name")) {
-            System.out.println(Objects.requireNonNull(DenizenImplementation.instance.getConfig().getString("settings.default-path")) + "/" + name);
-            File audio = new File(Objects.requireNonNull(DenizenImplementation.instance.getConfig().getString("settings.default-path")) + name);
+            System.out.println(Objects.requireNonNull(Altenizen.instance.getConfig().getString("settings.default-path")) + "/" + name);
+            File audio = new File(Objects.requireNonNull(Altenizen.instance.getConfig().getString("settings.default-path")) + name);
             if (audio.delete()) {
                 scriptEntry.saveObject("success", new ElementTag(true));
             }

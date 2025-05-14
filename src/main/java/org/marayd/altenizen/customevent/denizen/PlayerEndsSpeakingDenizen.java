@@ -1,7 +1,6 @@
-package com.marayd.denizenImplementation.event;
+package org.marayd.altenizen.customevent.denizen;
 
 import com.denizenscript.denizen.events.BukkitScriptEvent;
-import com.denizenscript.denizen.objects.LocationTag;
 import com.denizenscript.denizen.objects.PlayerTag;
 import com.denizenscript.denizen.utilities.implementation.BukkitScriptEntryData;
 import com.denizenscript.denizencore.objects.ObjectTag;
@@ -9,8 +8,9 @@ import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.objects.core.QueueTag;
 import com.denizenscript.denizencore.scripts.ScriptEntryData;
 import com.denizenscript.denizencore.utilities.CoreUtilities;
-import com.marayd.denizenImplementation.DenizenImplementation;
-import com.marayd.denizenImplementation.PlasmoHook.DenizenAddon;
+import org.marayd.altenizen.Altenizen;
+import org.marayd.altenizen.customevent.bukkit.PlayerEndsSpeaking;
+import org.marayd.altenizen.plasmo.DenizenAddon;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayerSpeechEvent extends BukkitScriptEvent implements Listener {
-    public PlayerSpeechEvent() {}
+public class PlayerEndsSpeakingDenizen extends BukkitScriptEvent implements Listener {
+    public PlayerEndsSpeakingDenizen() {}
 
     private Event event;
     private static PlayerTag player;
@@ -80,11 +80,11 @@ public class PlayerSpeechEvent extends BukkitScriptEvent implements Listener {
     }
 
     @EventHandler
-    public void onPlayerSpeakEnds(BukkitPlayerSpeechEvent event) {
+    public void onPlayerSpeakEnds(PlayerEndsSpeaking event) {
         player = new PlayerTag(event.getPlayer());
         message = new ElementTag(event.getMessage());
         bytes = event.getBytes();
-        Bukkit.getScheduler().runTask(DenizenImplementation.instance, () -> fire(event));
+        Bukkit.getScheduler().runTask(Altenizen.instance, () -> fire(event));
     }
 
 }

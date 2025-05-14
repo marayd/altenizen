@@ -1,11 +1,10 @@
-package com.marayd.denizenImplementation.PlasmoHook;
+package org.marayd.altenizen.plasmo;
 
-import com.marayd.denizenImplementation.event.BukkitPlayerSpeechEvent;
 import org.bukkit.Bukkit;
+import org.marayd.altenizen.customevent.bukkit.PlayerEndsSpeaking;
+import org.marayd.altenizen.customevent.bukkit.PlayerSpeaksEvent;
 import org.vosk.Model;
 import org.vosk.Recognizer;
-import su.plo.slib.api.server.position.ServerPos3d;
-import su.plo.slib.api.server.world.McServerWorld;
 import su.plo.voice.api.addon.AddonInitializer;
 import su.plo.voice.api.addon.AddonLoaderScope;
 import su.plo.voice.api.addon.InjectPlasmoVoice;
@@ -16,6 +15,7 @@ import su.plo.voice.api.audio.codec.CodecException;
 import su.plo.voice.api.encryption.Encryption;
 import su.plo.voice.api.encryption.EncryptionException;
 import su.plo.voice.api.event.EventPriority;
+import su.plo.voice.api.event.EventSubscribe;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 import su.plo.voice.api.server.audio.capture.ProximityServerActivationHelper;
 import su.plo.voice.api.server.audio.capture.ServerActivation;
@@ -25,8 +25,7 @@ import su.plo.voice.api.server.event.audio.source.PlayerSpeakEndEvent;
 import su.plo.voice.api.server.event.audio.source.PlayerSpeakEvent;
 import su.plo.voice.api.server.player.VoicePlayer;
 import su.plo.voice.api.server.player.VoiceServerPlayer;
-import com.marayd.denizenImplementation.DenizenImplementation;
-import com.marayd.denizenImplementation.event.OnPlayerSpeakEvent;
+import org.marayd.altenizen.Altenizen;
 import su.plo.voice.server.player.BaseVoicePlayer;
 
 import javax.sound.sampled.AudioFileFormat;
@@ -44,8 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static com.marayd.denizenImplementation.DenizenImplementation.denizenAddon;
-import static com.marayd.denizenImplementation.DenizenImplementation.instance;
+import static org.marayd.altenizen.Altenizen.instance;
 
 @Addon(
         id = "pv-addon-altenizen",
@@ -82,16 +80,16 @@ public final class DenizenAddon implements AddonInitializer {
                 modelDir.mkdirs();
             }
 
-            File modelPath = new File(modelDir, instance.getConfig().getString("vosk.model-name"));
+            File modelPath = new File(modelDir, Objects.requireNonNull(instance.getConfig().getString("vosk.model-name")));
             if (!modelPath.exists()) {
                 System.out.println("Модель не найдена, начинаем загрузку...");
                 downloadAndExtractModel(instance.getConfig().getString("vosk.model-link"), modelDir);
             }
 
-//            voskModel = new Model(modelPath.getCanonicalPath());
+            voskModel = new Model(modelPath.getCanonicalPath());
         } catch (IOException e) {
-            e.printStackTrace();
-            return;
+            instance.getLogger().severe("Execption: " + Arrays.toString(e.getStackTrace()));
+            instance.getLogger().severe("Execption: " + e.getMessage());
         }
 
 
@@ -101,7 +99,7 @@ public final class DenizenAddon implements AddonInitializer {
         }
 
         sourceLine = voiceServer.getSourceLineManager().createBuilder(
-                DenizenImplementation.denizenAddon,
+                Altenizen.denizenAddon,
                 "Altenizen",
                 "pv.activation.altenizen",
                 "plasmovoice:textures/icons/speaker_priority.png",
@@ -109,25 +107,28 @@ public final class DenizenAddon implements AddonInitializer {
         ).build();
 
         ServerActivation activation = voiceServer.getActivationManager().createBuilder(
-                DenizenImplementation.denizenAddon,
+                Altenizen.denizenAddon,
                 "Altenizen",
                 "pv.activation.altenizen",
                 "plasmovoice:textures/icons/microphone_priority.png",
                 "pv.activation.altenizen",
                 10
         ).build();
-//        voiceServer.getEventBus().register(this, PlayerSpeakEvent.class, EventPriority.HIGHEST, this::onPlayerSpeak);
-//        voiceServer.getEventBus().register(this, PlayerSpeakEndEvent.class, EventPriority.HIGHEST, this::onPlayerSpeakEnd);
-        McServerWorld world = denizenAddon.getVoice().getMinecraftServer()
-                .getWorlds()
-                .stream()
-                .filter(w -> w.getName().equals("world"))
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("World not found."));
+//        voiceServer.getEventBus().register(this, this);
+
+        voiceServer.getEventBus().register(this, PlayerSpeakEvent.class, EventPriority.HIGHEST, this::onPlayerSpeak);
+        voiceServer.getEventBus().register(this, PlayerSpeakEndEvent.class, EventPriority.HIGHEST, this::onPlayerSpeakEnd);
+//        McServerWorld world = denizenAddon.getVoice().getMinecraftServer()
+//                .getWorlds()
+//                .stream()
+//                .filter(w -> w.getName().equals("world"))
+//                .findAny()
+//                .orElseThrow(() -> new IllegalStateException("World not found."));
 
 
-        ServerPos3d position = new ServerPos3d(world, 0, 0, 0);
-        source = sourceLine.createStaticSource(position, false);
+//        ServerPos3d position = new ServerPos3d(world, 0, 0, 0);
+//        source = sourceLine.createStaticSource(position, false);
+//        System.out.println(sourceLine);
 
         this.proximityHelper = new ProximityServerActivationHelper(voiceServer, activation, sourceLine);
         proximityHelper.registerListeners(this);
@@ -149,21 +150,75 @@ public final class DenizenAddon implements AddonInitializer {
     }
 
     public void releaseResources(String playerId) {
-        AudioEncoder encoder = encoders.remove(playerId);
-        if (encoder != null) encoder.close();
-
-        AudioDecoder decoder = decoders.remove(playerId);
-        if (decoder != null) decoder.close();
-
-        ByteArrayOutputStream buffer = playerAudioBuffer.remove(playerId);
-        if (buffer != null) {
+        Optional.ofNullable(encoders.remove(playerId)).ifPresent(AudioEncoder::close);
+        Optional.ofNullable(decoders.remove(playerId)).ifPresent(AudioDecoder::close);
+        Optional.ofNullable(playerAudioBuffer.remove(playerId)).ifPresent(buffer -> {
             try {
                 buffer.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        });
+    }
+
+    public void onPlayerSpeak(PlayerSpeakEvent event) {
+        byte[] encryptedFrame = event.getPacket().getData();
+        var player = (BaseVoicePlayer<?>) event.getPlayer();
+        String playerId = player.getInstance().getName();
+
+        AudioDecoder decoder = getOrCreateDecoder(playerId);
+        Encryption encryption = voiceServer.getDefaultEncryption();
+
+        try {
+            byte[] decryptedFrame = encryption.decrypt(encryptedFrame);
+            short[] audioFrame = decoder.decode(decryptedFrame);
+
+            // Convert short[] to byte[]
+            ByteBuffer byteBuffer = ByteBuffer.allocate(audioFrame.length * 2).order(ByteOrder.LITTLE_ENDIAN);
+            for (short sample : audioFrame) {
+                byteBuffer.putShort(sample);
+            }
+
+            byte[] audioBytes = byteBuffer.array();
+
+            // Efficient computeIfAbsent and append
+            playerAudioBuffer.computeIfAbsent(playerId, id -> new ByteArrayOutputStream()).write(audioBytes);
+
+            PlayerSpeaksEvent speaksEvent = new PlayerSpeaksEvent(player.getInstance().getInstance(), audioBytes);
+            Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
+                    Bukkit.getPluginManager().callEvent(speaksEvent)
+            );
+
+        } catch (EncryptionException | CodecException | IOException e) {
+            e.printStackTrace();
         }
     }
+
+    public void onPlayerSpeakEnd(PlayerSpeakEndEvent event) {
+        var player = (BaseVoicePlayer<?>) event.getPlayer();
+        String playerId = player.getInstance().getName();
+
+        ByteArrayOutputStream audioStream = playerAudioBuffer.get(playerId);
+
+        if (audioStream != null && audioStream.size() > 0) {
+            byte[] audioBytes = audioStream.toByteArray();
+
+            recognizeFromBytesAsync(audioBytes).thenAccept(result -> {
+                if (result != null) {
+                    PlayerEndsSpeaking endEvent = new PlayerEndsSpeaking(player.getInstance().getInstance(), result, audioBytes);
+                    Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
+                            Bukkit.getPluginManager().callEvent(endEvent)
+                    );
+                }
+            }).exceptionally(ex -> {
+                ex.printStackTrace();
+                return null;
+            });
+        }
+
+        releaseResources(playerId); // Always release even on empty data
+    }
+
 
     public void playSoundOnLocation(ServerStaticSource source, short[] audioData, short distance, String playerId) {
         AudioEncoder encoder = getOrCreateEncoder(playerId);
@@ -174,59 +229,6 @@ public final class DenizenAddon implements AddonInitializer {
             source.sendAudioFrame(encryptedFrame, encodedFrame.length, distance);
         } catch (CodecException | EncryptionException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public void onPlayerSpeak(PlayerSpeakEvent event) {
-        byte[] encryptedFrame = event.getPacket().getData();
-        var player = (BaseVoicePlayer<?>) event.getPlayer();
-        var playerId = player.getInstance().getName();
-
-        AudioDecoder decoder = getOrCreateDecoder(playerId);
-        Encryption encryption = voiceServer.getDefaultEncryption();
-
-        try {
-            byte[] decryptedFrame = encryption.decrypt(encryptedFrame);
-            short[] audioFrame = decoder.decode(decryptedFrame);
-
-            playerAudioBuffer.putIfAbsent(playerId, new ByteArrayOutputStream());
-
-            ByteBuffer buffer = ByteBuffer.allocate(audioFrame.length * 2);
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-            for (short sample : audioFrame) {
-                buffer.putShort(sample);
-            }
-            byte[] audioBytes = buffer.array();
-            playSoundOnLocation(source, audioFrame, (short) 16, playerId);
-            playerAudioBuffer.get(playerId).write(audioBytes);
-
-//            OnPlayerSpeakEvent onPlayerSpeaks = new OnPlayerSpeakEvent(player.getInstance().getInstance(), audioBytes);
-//            Bukkit.getScheduler().runTask(instance, () -> Bukkit.getPluginManager().callEvent(onPlayerSpeaks));
-        } catch (EncryptionException | CodecException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void onPlayerSpeakEnd(PlayerSpeakEndEvent event) {
-        var player = (BaseVoicePlayer<?>) event.getPlayer();
-        var playerId = player.getInstance().getName();
-
-        ByteArrayOutputStream audioData = playerAudioBuffer.get(playerId);
-
-        if (audioData != null && audioData.size() > 0) {
-            try {
-                byte[] audioBytes = audioData.toByteArray();
-
-//                recognizeFromBytesAsync(audioBytes).thenAccept(result -> {
-//                    if (result != null) {
-//                        BukkitPlayerSpeechEvent bukkitEvent = new BukkitPlayerSpeechEvent(player.getInstance().getInstance(), result, audioBytes);
-//                        Bukkit.getScheduler().runTask(instance, () -> Bukkit.getPluginManager().callEvent(bukkitEvent));
-//                    }
-//                });
-            } finally {
-                releaseResources(playerId);
-//                playerAudioBuffer.remove(playerId);
-            }
         }
     }
 

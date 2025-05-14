@@ -1,12 +1,12 @@
-package com.marayd.denizenImplementation.DenizenHook;
+package org.marayd.altenizen.processors;
 
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.objects.core.ListTag;
 import com.denizenscript.denizencore.scripts.commands.core.AdjustCommand;
 import com.denizenscript.denizencore.tags.PseudoObjectTagBase;
 import com.denizenscript.denizencore.tags.TagManager;
-import com.marayd.denizenImplementation.DenizenImplementation;
-import com.marayd.denizenImplementation.PlasmoHook.DenizenAddon;
+import org.marayd.altenizen.Altenizen;
+import org.marayd.altenizen.plasmo.DenizenAddon;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PlasmoTagProc extends PseudoObjectTagBase<PlasmoTagProc> {
-    private static final DenizenImplementation plugin = DenizenImplementation.instance;
+    private static final Altenizen plugin = Altenizen.instance;
 //    private static final DenizenAddon denizenAddon = new DenizenAddon();
 
     private static List<String> getFilesFromDir(String dir) {
@@ -31,7 +31,7 @@ public class PlasmoTagProc extends PseudoObjectTagBase<PlasmoTagProc> {
 
     @Override
     public void register() {
-        tagProcessor.registerTag(ListTag.class, "list_audio", (attribute, object) -> new ListTag(getFilesFromDir(DenizenImplementation.instance.getConfig().getString("settings.path-to-download"))));
+        tagProcessor.registerTag(ListTag.class, "list_audio", (attribute, object) -> new ListTag(getFilesFromDir(Altenizen.instance.getConfig().getString("settings.path-to-download"))));
         tagProcessor.registerTag(ListTag.class, "active_sources", (attribute, object) ->
                 new ListTag(DenizenAddon.sourceLine.getSources()
                         .stream()

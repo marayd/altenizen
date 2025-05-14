@@ -1,35 +1,27 @@
-package com.marayd.denizenImplementation.event;
+package org.marayd.altenizen.customevent.denizen;
 
-import com.denizenscript.denizen.objects.LocationTag;
 import com.denizenscript.denizen.objects.PlayerTag;
 import com.denizenscript.denizen.utilities.implementation.BukkitScriptEntryData;
 import com.denizenscript.denizen.events.BukkitScriptEvent;
 import com.denizenscript.denizencore.objects.ObjectTag;
 import com.denizenscript.denizencore.objects.core.ElementTag;
-import com.denizenscript.denizencore.objects.core.QueueTag;
 import com.denizenscript.denizencore.scripts.ScriptEntryData;
-import com.denizenscript.denizencore.utilities.CoreUtilities;
-import com.marayd.denizenImplementation.PlasmoHook.DenizenAddon;
-import com.marayd.denizenImplementation.PlasmoHook.PlayerAudioSender;
+import org.marayd.altenizen.customevent.bukkit.PlayerSpeaksEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import com.marayd.denizenImplementation.DenizenImplementation;
+import org.marayd.altenizen.Altenizen;
 import su.plo.slib.api.server.position.ServerPos3d;
 import su.plo.slib.api.server.world.McServerWorld;
 import su.plo.voice.api.server.audio.source.ServerStaticSource;
 
-import java.io.IOException;
+import static org.marayd.altenizen.Altenizen.denizenAddon;
+import static org.marayd.altenizen.plasmo.DenizenAddon.sourceLine;
 
-import static com.marayd.denizenImplementation.DenizenImplementation.denizenAddon;
-import static com.marayd.denizenImplementation.PlasmoHook.DenizenAddon.sourceLine;
+public class PlayerSpeaksEventDenizen extends BukkitScriptEvent implements Listener {
 
-public class OnPlayerSpeaks extends BukkitScriptEvent implements Listener {
-
-    public OnPlayerSpeaks() {
+    public PlayerSpeaksEventDenizen() {
     }
 
     // Add event-specific fields
@@ -102,11 +94,11 @@ public class OnPlayerSpeaks extends BukkitScriptEvent implements Listener {
     }
 
     @EventHandler
-    public void onPlayerSpeak(OnPlayerSpeakEvent event) {
+    public void onPlayerSpeak(PlayerSpeaksEvent event) {
         player = new PlayerTag(event.getPlayer());
         this.event = event;
         bytes = event.getBytes();
-        Bukkit.getScheduler().runTask(DenizenImplementation.instance, () -> fire(event));
+        Bukkit.getScheduler().runTask(Altenizen.instance, () -> fire(event));
     }
 
 }

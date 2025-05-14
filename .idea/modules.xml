@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/DenizenImplementation.main.iml" filepath="$PROJECT_DIR$/.idea/modules/DenizenImplementation.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/DenizenImplementation.test.iml" filepath="$PROJECT_DIR$/.idea/modules/DenizenImplementation.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/org.mryd.DenizenImplementation.test.iml" filepath="$PROJECT_DIR$/.idea/modules/org.mryd.DenizenImplementation.test.iml" />
     </modules>
   </component>
 </project>

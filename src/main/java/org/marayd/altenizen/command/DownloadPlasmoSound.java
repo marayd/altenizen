@@ -1,10 +1,10 @@
-package com.marayd.denizenImplementation.command;
+package org.marayd.altenizen.command;
 
 import com.denizenscript.denizencore.objects.Argument;
 import com.denizenscript.denizencore.scripts.ScriptEntry;
 import com.denizenscript.denizencore.scripts.commands.AbstractCommand;
 import com.denizenscript.denizencore.scripts.commands.Holdable;
-import com.marayd.denizenImplementation.DenizenImplementation;
+import org.marayd.altenizen.Altenizen;
 
 import javax.sound.sampled.*;
 import java.io.BufferedInputStream;
@@ -47,7 +47,7 @@ public class DownloadPlasmoSound extends AbstractCommand implements Holdable {
                 downloadAudioFromInternet(url, name);
             } catch (Exception e) {
                 e.printStackTrace();
-                DenizenImplementation.instance.getLogger().severe("Failed to download and process audio: " + e.getMessage());
+                Altenizen.instance.getLogger().severe("Failed to download and process audio: " + e.getMessage());
             }
         }).thenRun(() -> {
             scriptEntry.setFinished(true); // Завершаем команду после обработки
@@ -98,9 +98,9 @@ public class DownloadPlasmoSound extends AbstractCommand implements Holdable {
      * @param name The name of the processed file (saved in plugins/Altenizen/.saved_audio).
      */
     public static void downloadAudioFromInternet(String url, String name) {
-        String dir = DenizenImplementation.instance.getConfig().getString("settings.path-to-download");
+        String dir = Altenizen.instance.getConfig().getString("settings.path-to-download");
         if (dir == null) {
-            DenizenImplementation.instance.getLogger().severe("Check config! There is no 'settings.path-to-download' setting!");
+            Altenizen.instance.getLogger().severe("Check config! There is no 'settings.path-to-download' setting!");
             return;
         }
         File outputDir = new File(dir);
@@ -108,7 +108,7 @@ public class DownloadPlasmoSound extends AbstractCommand implements Holdable {
             System.err.println("Failed to create directory: " + outputDir.getAbsolutePath());
             return;
         }
-        long maxFileSize = DenizenImplementation.instance.getConfig().getInt("settings.max-size") * 1024L; // 5 MB in bytes
+        long maxFileSize = Altenizen.instance.getConfig().getInt("settings.max-size") * 1024L; // 5 MB in bytes
 
         File downloadedFile = new File(outputDir, "temp_" + name);
         File processedFile = new File(outputDir, name);
