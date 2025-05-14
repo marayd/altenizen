@@ -1,3 +1,7 @@
-If you want, you can build this project and remove the auth system.
+Add-on for the Denizen plugin that adds support for PlasmoVoice.
 
-Project archived on 24/02/2025
+Original creator - (mryd, marayd, MrydDev).
+
+the code is distributed under a proprietary license and belongs to marayd only.
+
+https://mryd.org/
