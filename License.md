@@ -1,14 +1,27 @@
-Custom License for Altenizen
+Custom Proprietary License for Altenizen
 
-By using this work, you agree to the following terms:
+This project is not open source. Although the source code is publicly available, it is licensed under a proprietary license. The following terms apply:
 
-Commercial Use:
+Copyright Ownership
+The entire source code and all related files are the exclusive property of the marayd  (referred to as the "Author"). Public access to the code does not imply any rights of use, reproduction, or distribution.
 
-The use of this work for commercial purposes is strictly prohibited.
-Attribution:
+No Unauthorized Use
+You are not allowed to use this code in any way without explicit permission from the Author. This includes running, modifying, compiling, or distributing it.
 
-You must always provide appropriate credit to the author, marayd, whenever you use this work.
-Specific User Restriction:
+No Commercial Use
+Commercial use of any kind is strictly forbidden without the Author’s prior written consent.
 
-The use of this work is prohibited for users whose username contains "mejin" in any form.
-By using this work, you confirm your agreement to these terms.
+No Forking or Derivatives
+Forking this repository, creating derivative works, or reusing any portion of the codebase is prohibited unless you have received express permission from the Author.
+
+Read-Only Access
+The source code is published for viewing purposes only. It may not be used, reused, or repurposed in any form.
+
+No License Is Granted by Default
+By accessing this repository, you agree that no license or rights are granted to you under copyright, trademark, or patent law.
+
+Enforcement
+Any unauthorized use will be considered a violation of the license and may result in legal action.
+
+For any requests, including usage rights or collaboration, please contact the Author directly.
+
