@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) mryd - https://mryd.org/
+ * All rights reserved.
+ *
+ * This file is part of the Altenizen project: https://github.com/marayd/altenizen
+ *
+ * Custom Proprietary License:
+ * This source code is the exclusive property of the Author (mryd).
+ * Access to this code is provided for viewing purposes only.
+ *
+ * You MAY NOT:
+ * - Use, compile, run, or execute this code.
+ * - Modify, distribute, or reproduce any part of this code.
+ * - Create forks or derivative works.
+ * - Use this code for commercial purposes.
+ *
+ * No rights or licenses are granted by default. By accessing this file,
+ * you acknowledge and agree to the terms of the proprietary license:
+ * https://github.com/marayd/altenizen/blob/main/License.md
+ *
+ * For permissions or inquiries, contact the Author directly.
+ */
+
 package org.marayd.altenizen.command;
 
 import com.denizenscript.denizen.objects.*;
@@ -7,7 +30,6 @@ import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.scripts.ScriptEntry;
 import com.denizenscript.denizencore.scripts.commands.AbstractCommand;
 import com.denizenscript.denizencore.scripts.commands.Holdable;
-import org.marayd.altenizen.Altenizen;
 import org.marayd.altenizen.plasmo.PlayerAudioSender;
 import su.plo.slib.api.server.entity.McServerEntity;
 import su.plo.slib.api.server.position.ServerPos3d;
@@ -20,7 +42,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.marayd.altenizen.Altenizen.*;
-import static org.marayd.altenizen.plasmo.DenizenAddon.sourceLine;
+import static org.marayd.altenizen.plasmo.PlasmoVoiceAddon.sourceLine;
 
 public class PlasmoHookCommand extends AbstractCommand implements Holdable {
     private final List<CommandArgumentDefinition> argumentDefinitions = List.of(
@@ -114,7 +136,7 @@ public class PlasmoHookCommand extends AbstractCommand implements Holdable {
         String action = scriptEntry.getElement("action").asString();
         PlayerTag player = com.denizenscript.denizen.utilities.Utilities.getEntryPlayer(scriptEntry);
 
-        VoiceServerPlayer voicePlayer = denizenAddon.getVoice().getPlayerManager()
+        VoiceServerPlayer voicePlayer = PLASMO_VOICE_ADDON.getVoice().getPlayerManager()
                 .getPlayerByName(player.getName())
                 .orElseThrow(() -> new IllegalStateException("Voice player not found"));
 
@@ -133,7 +155,7 @@ public class PlasmoHookCommand extends AbstractCommand implements Holdable {
         entry.saveObject("audio_id", new ElementTag(source.getId().toString()));
 
         try {
-            PlayerAudioSender.playSoundToPlayer(denizenAddon.getVoice(), source,
+            PlayerAudioSender.playSoundToPlayer(PLASMO_VOICE_ADDON.getVoice(), source,
                     instance.getConfig().getString("settings.default-path") + "/" + path);
         } catch (Exception e) {
             throw new RuntimeException("Failed to send audio: " + e.getMessage(), e);
@@ -163,7 +185,7 @@ public class PlasmoHookCommand extends AbstractCommand implements Holdable {
         String path = entry.getElement("path").asString();
         short distance = Short.parseShort(entry.getElement("distance").asString());
 
-        McServerWorld world = denizenAddon.getVoice().getMinecraftServer()
+        McServerWorld world = PLASMO_VOICE_ADDON.getVoice().getMinecraftServer()
                 .getWorlds().stream()
                 .filter(w -> w.getName().equals(loc.getWorldName()))
                 .findFirst()
@@ -173,20 +195,20 @@ public class PlasmoHookCommand extends AbstractCommand implements Holdable {
         source.setIconVisible(false);
         entry.saveObject("audio_id", new ElementTag(source.getId().toString()));
 
-        PlayerAudioSender.playSoundOnLocation(denizenAddon.getVoice(), source,
+        PlayerAudioSender.playSoundOnLocation(PLASMO_VOICE_ADDON.getVoice(), source,
                 instance.getConfig().getString("settings.default-path") + "/" + path, distance);
     }
 
     private void handlePlayOnEntity(ScriptEntry entry) {
         EntityTag ent = entry.getObjectTag("entity");
-        McServerEntity serverEntity = denizenAddon.getVoice().getMinecraftServer().getEntityByInstance(ent.getBukkitEntity());
+        McServerEntity serverEntity = PLASMO_VOICE_ADDON.getVoice().getMinecraftServer().getEntityByInstance(ent.getBukkitEntity());
         String path = entry.getElement("path").asString();
         short distance = Short.parseShort(entry.getElement("distance").asString());
 
         ServerEntitySource source = sourceLine.createEntitySource(serverEntity, false);
         entry.saveObject("audio_id", new ElementTag(source.getId().toString()));
 
-        PlayerAudioSender.playSoundOnEntity(denizenAddon.getVoice(), source,
+        PlayerAudioSender.playSoundOnEntity(PLASMO_VOICE_ADDON.getVoice(), source,
                 instance.getConfig().getString("settings.default-path") + "/" + path, distance);
     }
 

@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) mryd - https://mryd.org/
+ * All rights reserved.
+ *
+ * This file is part of the Altenizen project: https://github.com/marayd/altenizen
+ *
+ * Custom Proprietary License:
+ * This source code is the exclusive property of the Author (mryd).
+ * Access to this code is provided for viewing purposes only.
+ *
+ * You MAY NOT:
+ * - Use, compile, run, or execute this code.
+ * - Modify, distribute, or reproduce any part of this code.
+ * - Create forks or derivative works.
+ * - Use this code for commercial purposes.
+ *
+ * No rights or licenses are granted by default. By accessing this file,
+ * you acknowledge and agree to the terms of the proprietary license:
+ * https://github.com/marayd/altenizen/blob/main/License.md
+ *
+ * For permissions or inquiries, contact the Author directly.
+ */
+
 package org.marayd.altenizen.plasmo;
 
 import org.bukkit.Bukkit;
@@ -15,16 +38,12 @@ import su.plo.voice.api.audio.codec.CodecException;
 import su.plo.voice.api.encryption.Encryption;
 import su.plo.voice.api.encryption.EncryptionException;
 import su.plo.voice.api.event.EventPriority;
-import su.plo.voice.api.event.EventSubscribe;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 import su.plo.voice.api.server.audio.capture.ProximityServerActivationHelper;
-import su.plo.voice.api.server.audio.capture.ServerActivation;
 import su.plo.voice.api.server.audio.line.ServerSourceLine;
 import su.plo.voice.api.server.audio.source.ServerStaticSource;
 import su.plo.voice.api.server.event.audio.source.PlayerSpeakEndEvent;
 import su.plo.voice.api.server.event.audio.source.PlayerSpeakEvent;
-import su.plo.voice.api.server.player.VoicePlayer;
-import su.plo.voice.api.server.player.VoiceServerPlayer;
 import org.marayd.altenizen.Altenizen;
 import su.plo.voice.server.player.BaseVoicePlayer;
 
@@ -52,16 +71,12 @@ import static org.marayd.altenizen.Altenizen.instance;
         authors = {"maraydq"},
         scope = AddonLoaderScope.ANY
 )
-public final class DenizenAddon implements AddonInitializer {
+public final class PlasmoVoiceAddon implements AddonInitializer {
 
     @InjectPlasmoVoice
     private PlasmoVoiceServer voiceServer;
-    private static final String MODEL_URL_RU = "https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip";
-    private static final String MODEL_URL_EN = "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip";
+
     private static final String MODEL_FOLDER = "plugins/Altenizen/models";
-    private final Map<VoiceServerPlayer, ByteArrayOutputStream> recordings = new HashMap<>();
-    private final Map<VoicePlayer, ByteArrayOutputStream> activeRecordings = new HashMap<>();
-    private static ServerStaticSource source;
     private static Encryption encryption;
 
     public PlasmoVoiceServer getVoice() {
@@ -77,7 +92,8 @@ public final class DenizenAddon implements AddonInitializer {
         try {
             File modelDir = new File(MODEL_FOLDER);
             if (!modelDir.exists()) {
-                modelDir.mkdirs();
+                boolean isSuccess = modelDir.mkdirs();
+                if (!isSuccess) instance.getLogger().warning("Couldn't create directory");
             }
 
             File modelPath = new File(modelDir, Objects.requireNonNull(instance.getConfig().getString("vosk.model-name")));
@@ -99,42 +115,32 @@ public final class DenizenAddon implements AddonInitializer {
         }
 
         sourceLine = voiceServer.getSourceLineManager().createBuilder(
-                Altenizen.denizenAddon,
+                Altenizen.PLASMO_VOICE_ADDON,
                 "Altenizen",
                 "pv.activation.altenizen",
                 "plasmovoice:textures/icons/speaker_priority.png",
                 10
         ).build();
 
-        ServerActivation activation = voiceServer.getActivationManager().createBuilder(
-                Altenizen.denizenAddon,
-                "Altenizen",
-                "pv.activation.altenizen",
-                "plasmovoice:textures/icons/microphone_priority.png",
-                "pv.activation.altenizen",
-                10
-        ).build();
-//        voiceServer.getEventBus().register(this, this);
+//        ServerActivation activation = voiceServer.getActivationManager().createBuilder(
+//                Altenizen.denizenAddon,
+//                "Altenizen",
+//                "pv.activation.altenizen",
+//                "plasmovoice:textures/icons/microphone_priority.png",
+//                "pv.activation.altenizen",
+//                10
+//        ).build();
+//        this.proximityHelper = new ProximityServerActivationHelper(voiceServer, activation, sourceLine);
 
         voiceServer.getEventBus().register(this, PlayerSpeakEvent.class, EventPriority.HIGHEST, this::onPlayerSpeak);
         voiceServer.getEventBus().register(this, PlayerSpeakEndEvent.class, EventPriority.HIGHEST, this::onPlayerSpeakEnd);
-//        McServerWorld world = denizenAddon.getVoice().getMinecraftServer()
-//                .getWorlds()
-//                .stream()
-//                .filter(w -> w.getName().equals("world"))
-//                .findAny()
-//                .orElseThrow(() -> new IllegalStateException("World not found."));
 
 
-//        ServerPos3d position = new ServerPos3d(world, 0, 0, 0);
-//        source = sourceLine.createStaticSource(position, false);
-//        System.out.println(sourceLine);
-
-        this.proximityHelper = new ProximityServerActivationHelper(voiceServer, activation, sourceLine);
         proximityHelper.registerListeners(this);
         encryption = voiceServer.getDefaultEncryption();
         instance.getLogger().info("║ Addon initialized successfully ║");
     }
+
 
 
     private final ConcurrentHashMap<String, AudioEncoder> encoders = new ConcurrentHashMap<>();
@@ -173,7 +179,6 @@ public final class DenizenAddon implements AddonInitializer {
             byte[] decryptedFrame = encryption.decrypt(encryptedFrame);
             short[] audioFrame = decoder.decode(decryptedFrame);
 
-            // Convert short[] to byte[]
             ByteBuffer byteBuffer = ByteBuffer.allocate(audioFrame.length * 2).order(ByteOrder.LITTLE_ENDIAN);
             for (short sample : audioFrame) {
                 byteBuffer.putShort(sample);
@@ -181,7 +186,6 @@ public final class DenizenAddon implements AddonInitializer {
 
             byte[] audioBytes = byteBuffer.array();
 
-            // Efficient computeIfAbsent and append
             playerAudioBuffer.computeIfAbsent(playerId, id -> new ByteArrayOutputStream()).write(audioBytes);
 
             PlayerSpeaksEvent speaksEvent = new PlayerSpeaksEvent(player.getInstance().getInstance(), audioBytes);
@@ -216,7 +220,7 @@ public final class DenizenAddon implements AddonInitializer {
             });
         }
 
-        releaseResources(playerId); // Always release even on empty data
+        releaseResources(playerId);
     }
 
 

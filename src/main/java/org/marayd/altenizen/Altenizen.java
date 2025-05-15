@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) mryd - https://mryd.org/
+ * All rights reserved.
+ *
+ * This file is part of the Altenizen project: https://github.com/marayd/altenizen
+ *
+ * Custom Proprietary License:
+ * This source code is the exclusive property of the Author (mryd).
+ * Access to this code is provided for viewing purposes only.
+ *
+ * You MAY NOT:
+ * - Use, compile, run, or execute this code.
+ * - Modify, distribute, or reproduce any part of this code.
+ * - Create forks or derivative works.
+ * - Use this code for commercial purposes.
+ *
+ * No rights or licenses are granted by default. By accessing this file,
+ * you acknowledge and agree to the terms of the proprietary license:
+ * https://github.com/marayd/altenizen/blob/main/License.md
+ *
+ * For permissions or inquiries, contact the Author directly.
+ */
+
 package org.marayd.altenizen;
 
 import com.denizenscript.denizencore.DenizenCore;
@@ -13,7 +36,7 @@ import org.marayd.altenizen.command.DownloadPlasmoSound;
 import org.marayd.altenizen.command.PlasmoHookCommand;
 import org.marayd.altenizen.customevent.denizen.PlayerEndsSpeakingDenizen;
 import org.marayd.altenizen.customevent.denizen.PlayerSpeaksEventDenizen;
-import org.marayd.altenizen.plasmo.DenizenAddon;
+import org.marayd.altenizen.plasmo.PlasmoVoiceAddon;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 
 import java.lang.management.ManagementFactory;
@@ -25,7 +48,7 @@ public final class Altenizen extends JavaPlugin {
     public static Altenizen instance;
 
     @Getter
-    public static final DenizenAddon denizenAddon = new DenizenAddon();
+    public static final PlasmoVoiceAddon PLASMO_VOICE_ADDON = new PlasmoVoiceAddon();
 
     @Override
     public void onEnable() {
@@ -70,7 +93,7 @@ public final class Altenizen extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        PlasmoVoiceServer.getAddonsLoader().unload(denizenAddon);
+        PlasmoVoiceServer.getAddonsLoader().unload(PLASMO_VOICE_ADDON);
     }
 
     private void initConfig() {
@@ -104,7 +127,7 @@ public final class Altenizen extends JavaPlugin {
         ScriptEvent.registerScriptEvent(PlayerEndsSpeakingDenizen.class);
 
         getLogger().info("║ Hooking PlasmoVoice ║");
-        PlasmoVoiceServer.getAddonsLoader().load(denizenAddon);
+        PlasmoVoiceServer.getAddonsLoader().load(PLASMO_VOICE_ADDON);
     }
 
     private boolean isPluginAvailable(String pluginName) {

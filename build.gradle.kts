@@ -3,7 +3,7 @@ import de.nilsdruyen.gradle.ftp.UploadExtension
 
 plugins {
     id("java")
-    kotlin("jvm") version "2.1.10"
+//    kotlin("jvm") version "2.1.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("de.nilsdruyen.gradle-ftp-upload-plugin") version "0.4.2"
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
@@ -65,13 +65,13 @@ repositories {
 
 dependencies {
     // Kotlin & Coroutines
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
+//    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
 
     // Minecraft-related dependencies
     paperweight.paperDevBundle("1.21.4-R0.1-SNAPSHOT")
-    compileOnly("su.plo.voice.server:paper:2.1.5-SNAPSHOT")
+    compileOnly("su.plo.voice.server:paper:2.1.4")
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("com.denizenscript:denizen:1.3.0-SNAPSHOT")
 

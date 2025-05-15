@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) mryd - https://mryd.org/
+ * All rights reserved.
+ *
+ * This file is part of the Altenizen project: https://github.com/marayd/altenizen
+ *
+ * Custom Proprietary License:
+ * This source code is the exclusive property of the Author (mryd).
+ * Access to this code is provided for viewing purposes only.
+ *
+ * You MAY NOT:
+ * - Use, compile, run, or execute this code.
+ * - Modify, distribute, or reproduce any part of this code.
+ * - Create forks or derivative works.
+ * - Use this code for commercial purposes.
+ *
+ * No rights or licenses are granted by default. By accessing this file,
+ * you acknowledge and agree to the terms of the proprietary license:
+ * https://github.com/marayd/altenizen/blob/main/License.md
+ *
+ * For permissions or inquiries, contact the Author directly.
+ */
+
 package org.marayd.altenizen.customevent.denizen;
 
 import com.denizenscript.denizen.objects.PlayerTag;
@@ -16,8 +39,8 @@ import su.plo.slib.api.server.position.ServerPos3d;
 import su.plo.slib.api.server.world.McServerWorld;
 import su.plo.voice.api.server.audio.source.ServerStaticSource;
 
-import static org.marayd.altenizen.Altenizen.denizenAddon;
-import static org.marayd.altenizen.plasmo.DenizenAddon.sourceLine;
+import static org.marayd.altenizen.Altenizen.PLASMO_VOICE_ADDON;
+import static org.marayd.altenizen.plasmo.PlasmoVoiceAddon.sourceLine;
 
 public class PlayerSpeaksEventDenizen extends BukkitScriptEvent implements Listener {
 
@@ -60,7 +83,7 @@ public class PlayerSpeaksEventDenizen extends BukkitScriptEvent implements Liste
                     String worldName = parts[3];
                     short distance = Short.parseShort(parts[parts.length - 1]);
 
-                    McServerWorld worldPlasmo = denizenAddon.getVoice().getMinecraftServer()
+                    McServerWorld worldPlasmo = PLASMO_VOICE_ADDON.getVoice().getMinecraftServer()
                             .getWorlds()
                             .stream()
                             .filter(w -> w.getName().equals(worldName))
