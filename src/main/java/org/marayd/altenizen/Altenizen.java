@@ -28,6 +28,7 @@ import com.denizenscript.denizencore.events.ScriptEvent;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.marayd.altenizen.command.ActivationCommand;
 import org.marayd.altenizen.processors.EntityTagProc;
@@ -40,8 +41,11 @@ import org.marayd.altenizen.customevent.denizen.PlayerSpeaksEventDenizen;
 import org.marayd.altenizen.plasmo.PlasmoVoiceAddon;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public final class Altenizen extends JavaPlugin {
 
@@ -51,9 +55,44 @@ public final class Altenizen extends JavaPlugin {
     @Getter
     public static final PlasmoVoiceAddon PLASMO_VOICE_ADDON = new PlasmoVoiceAddon();
 
+    private void requireLicenseAcceptance() {
+        String licenseUrl = "https://raw.githubusercontent.com/marayd/altenizen/refs/heads/main/License.md";
+        try {
+            URL url = new URL(licenseUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            connection.setRequestMethod("GET");
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode != 200) {
+                throw new RuntimeException("License fetch failed with response code: " + responseCode);
+            }
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            getLogger().info("====== License ======");
+            while ((line = reader.readLine()) != null) {
+                Bukkit.getLogger().info(line);
+            }
+            getLogger().info("====== End of License ======");
+            reader.close();
+
+        } catch (Exception e) {
+            getLogger().severe("Unable to load license from remote server.");
+            getLogger().severe("Error: " + e.getMessage());
+            Bukkit.getPluginManager().disablePlugin(this);
+        }
+    }
+
+
+
+
     @Override
     public void onEnable() {
         instance = this;
+        requireLicenseAcceptance();
+
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         long uptimeSec = runtimeMXBean.getUptime() / 1000;
 

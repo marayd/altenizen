@@ -84,7 +84,7 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
     public PlasmoVoiceServer getVoice() {
         return voiceServer;
     }
-    private ProximityServerActivationHelper proximityHelper;
+//    private ProximityServerActivationHelper proximityHelper;
 
     @Getter
     public static ServerSourceLine sourceLine;
@@ -140,7 +140,7 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
         voiceServer.getEventBus().register(this, PlayerSpeakEndEvent.class, EventPriority.HIGHEST, this::onPlayerSpeakEnd);
 
 
-        proximityHelper.registerListeners(this);
+//        proximityHelper.registerListeners(this);
         encryption = voiceServer.getDefaultEncryption();
         instance.getLogger().info("║ Addon initialized successfully ║");
     }
