@@ -2,9 +2,8 @@ name: Altenizen
 version: '1.0-SNAPSHOT'
 main: org.marayd.altenizen.Altenizen
 description: "Alternative Depenizen, adds a lot of addons!"
-api-version: '1.21.4'
+api-version: '1.21'
 author: maraydq
 depend:
   - Denizen
   - PlasmoVoice
-  - ProtocolLib
