@@ -76,3 +76,25 @@ This code is proprietary and owned by marayd. No use, reuse, modification, execu
 Commercial and derivative use is strictly prohibited.
 For requests, contact the Author directly.
 
+---
+
+### 🚫 Do Not Use GitHub for Installation
+
+Cloning or downloading this project directly from **GitHub** is **strictly prohibited**, even for non-commercial use.
+
+If you wish to use this project legitimately **(ONLY FOR NON-COMMERCIAL PURPOSES)**, you must obtain builds through the official **Jenkins pipeline**:
+
+🔗 [https://jenkins.mryd.org/](https://jenkins.mryd.org/)
+
+---
+
+### 📄 Read the `README.md` and `LICENSE.md`
+
+Before using any part of the software—especially builds obtained through Jenkins—you **must read and accept** the terms described in:
+
+* `README.md` — contains usage instructions and general policies
+* `LICENSE.md` — outlines detailed legal terms, restrictions, and distribution rules
+
+Use of this project implies agreement with all listed terms. If you do not agree, **do not proceed with installation or execution**.
+
+---
