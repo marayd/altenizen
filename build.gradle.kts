@@ -1,75 +1,32 @@
 import de.nilsdruyen.gradle.ftp.UploadExtension
-
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     id("java")
-//    kotlin("jvm") version "2.1.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("de.nilsdruyen.gradle-ftp-upload-plugin") version "0.4.2"
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
 }
 
-repositories {
-    mavenCentral()
-    maven("https://oss.sonatype.org/content/repositories/snapshots/")
-}
 group = "org.mryd"
 version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
     google()
-
-    maven {
-        name = "papermc-repo"
-        url = uri("https://repo.papermc.io/repository/maven-public/")
-    }
-
-    maven {
-        name = "sonatype"
-        url = uri("https://oss.sonatype.org/content/groups/public/")
-    }
-
-    maven {
-        url = uri("https://maven.citizensnpcs.co/repo")
-    }
-
-    maven {
-        url = uri("https://nexus.scarsz.me/content/groups/public/")
-    }
-
-    maven {
-        name = "plasmoverse-releases"
-        url = uri("https://repo.plasmoverse.com/releases")
-    }
-
-    maven {
-        name = "plasmoverse-snapshots"
-        url = uri("https://repo.plasmoverse.com/snapshots")
-    }
-
-    maven {
-        url = uri("https://jitpack.io")
-    }
-
-    maven {
-        name = "TarsosDSP repository"
-        url = uri("https://mvn.0110.be/releases")
-    }
-
-    maven {
-        url = uri("https://repo.dmulloy2.net/repository/public/")
-    }
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://oss.sonatype.org/content/groups/public/")
+    maven("https://maven.citizensnpcs.co/repo")
+    maven("https://nexus.scarsz.me/content/groups/public/")
+    maven("https://repo.plasmoverse.com/releases")
+    maven("https://repo.plasmoverse.com/snapshots")
+    maven("https://jitpack.io")
+    maven("https://mvn.0110.be/releases")
+    maven("https://repo.dmulloy2.net/repository/public/")
 }
 
-
 dependencies {
-    // Kotlin & Coroutines
-//    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
-//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-//    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
-
-    // Minecraft-related dependencies
     paperweight.paperDevBundle("1.21.4-R0.1-SNAPSHOT")
     compileOnly("su.plo.voice.server:paper:2.1.4")
     compileOnly("me.clip:placeholderapi:2.11.6")
@@ -81,24 +38,61 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok:1.18.36")
     annotationProcessor("org.projectlombok:lombok:1.18.36")
-
-
 }
 
-tasks.test {
-    useJUnitPlatform()
+// ==========================
+// Denizen 1.3.0 JAR Task
+// ==========================
+val denizen130 by configurations.creating
+
+dependencies {
+    denizen130("com.denizenscript:denizen:1.3.0-SNAPSHOT")
 }
+
+val shadowJar130 = tasks.register<ShadowJar>("shadowJar130") {
+    archiveClassifier.set("denizen130")
+    configurations = listOf(
+        project.configurations.runtimeClasspath.get(),
+        denizen130
+    )
+    from(sourceSets.main.get().output)
+    dependencies {
+        exclude(dependency("com.denizenscript:denizen"))
+    }
+}
+
+
+// ==========================
+// Denizen 1.3.1 JAR Task
+// ==========================
+val denizen131 by configurations.creating
+
+dependencies {
+    denizen131("com.denizenscript:denizen:1.3.1-SNAPSHOT")
+}
+
+val shadowJar131 = tasks.register<ShadowJar>("shadowJar131") {
+    archiveClassifier.set("denizen131")
+    configurations = listOf(
+        project.configurations.runtimeClasspath.get(),
+        denizen131
+    )
+    from(sourceSets.main.get().output)
+    dependencies {
+        exclude(dependency("com.denizenscript:denizen"))
+    }
+}
+
+// Disable default jar
 tasks.jar {
     enabled = false
 }
 
+// Make `build` depend on both jars
 tasks.build {
-    dependsOn("shadowJar")
+    dependsOn(shadowJar130, shadowJar131)
 }
 
-tasks.uploadFilesToFtp {
-    dependsOn("shadowJar")
-}
 
 configure<UploadExtension> {
     host = properties.getOrDefault("ftp.host", "game5.gamely.pro").toString()

@@ -28,7 +28,6 @@ import com.denizenscript.denizencore.events.ScriptEvent;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.marayd.altenizen.command.ActivationCommand;
 import org.marayd.altenizen.processors.EntityTagProc;

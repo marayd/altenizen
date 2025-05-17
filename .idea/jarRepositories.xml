@@ -17,6 +17,16 @@
       <option name="url" value="https://repo.maven.apache.org/maven2/" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="maven" />
+      <option name="name" value="maven" />
+      <option name="url" value="https://oss.sonatype.org/content/repositories/snapshots/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="Google" />
+      <option name="name" value="Google" />
+      <option name="url" value="https://dl.google.com/dl/android/maven2/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="papermc-repo" />
       <option name="name" value="papermc-repo" />
       <option name="url" value="https://repo.papermc.io/repository/maven-public/" />
@@ -27,13 +37,13 @@
       <option name="url" value="https://oss.sonatype.org/content/groups/public/" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="maven" />
-      <option name="name" value="maven" />
+      <option name="id" value="maven2" />
+      <option name="name" value="maven2" />
       <option name="url" value="https://maven.citizensnpcs.co/repo" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="maven2" />
-      <option name="name" value="maven2" />
+      <option name="id" value="maven3" />
+      <option name="name" value="maven3" />
       <option name="url" value="https://nexus.scarsz.me/content/groups/public/" />
     </remote-repository>
     <remote-repository>
@@ -47,8 +57,8 @@
       <option name="url" value="https://repo.plasmoverse.com/snapshots" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="maven3" />
-      <option name="name" value="maven3" />
+      <option name="id" value="maven4" />
+      <option name="name" value="maven4" />
       <option name="url" value="https://jitpack.io" />
     </remote-repository>
     <remote-repository>
@@ -57,29 +67,9 @@
       <option name="url" value="https://mvn.0110.be/releases" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="Google" />
-      <option name="name" value="Google" />
-      <option name="url" value="https://dl.google.com/dl/android/maven2/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="maven4" />
-      <option name="name" value="maven4" />
+      <option name="id" value="maven5" />
+      <option name="name" value="maven5" />
       <option name="url" value="https://repo.dmulloy2.net/repository/public/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="maven" />
-      <option name="name" value="maven" />
-      <option name="url" value="https://oss.sonatype.org/content/repositories/snapshots/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="enginehub" />
-      <option name="name" value="enginehub" />
-      <option name="url" value="https://maven.enginehub.org/repo/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="maven4" />
-      <option name="name" value="maven4" />
-      <option name="url" value="https://repo.extendedclip.com/releases/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="FabricMC" />
