@@ -10,10 +10,15 @@ https://mryd.org/
 ---
 
 **Custom Proprietary License for Altenizen – Jenkins Builds**
+
 **Project Name:** Altenizen
+
 **Github:** [https://github.com/marayd/altenizen](https://github.com/marayd/altenizen)
+
 **Jenkins:** [https://jenkins.mryd.org/job/altenizen/](https://jenkins.mryd.org/job/altenizen/)
+
 **Website:** [https://mryd.org](https://mryd.org)
+
 **Author / Owner:** mryd (also known as marayd / marayddev)
 
 ---
