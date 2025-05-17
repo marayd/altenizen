@@ -7,6 +7,8 @@ the code is distributed under a proprietary license and belongs to marayd only.
 https://mryd.org/
 
 
+# LICENSE ONLY FOR JENKINS BUILDS!
+
 ---
 
 **Custom Proprietary License for Altenizen – Jenkins Builds**
