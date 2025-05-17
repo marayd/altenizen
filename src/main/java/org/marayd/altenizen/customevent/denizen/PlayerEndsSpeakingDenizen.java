@@ -42,6 +42,7 @@ import org.bukkit.event.Listener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class PlayerEndsSpeakingDenizen extends BukkitScriptEvent implements Listener {
     public PlayerEndsSpeakingDenizen() {}
@@ -50,6 +51,8 @@ public class PlayerEndsSpeakingDenizen extends BukkitScriptEvent implements List
     private static PlayerTag player;
     private static ElementTag message;
     private static byte[] bytes;
+    private static UUID activationId;
+
     public List<QueueTag> waitForQueues = new ArrayList<>();
     @Override
     public boolean couldMatch(ScriptPath path) {
@@ -68,14 +71,12 @@ public class PlayerEndsSpeakingDenizen extends BukkitScriptEvent implements List
 
     @Override
     public ObjectTag getContext(String name) {
-        if (name.equals("player")) {
-            return player;
-        }
-        else if (name.equals("phrase")) {
-            return message;
-        }
-
-        return super.getContext(name);
+        return switch (name) {
+            case "message" -> player;
+            case "phrase" -> message;
+            case "activation" -> new ElementTag(Altenizen.PLASMO_VOICE_ADDON.getVoice().getActivationManager().getActivationById(activationId).get().getName());
+            default -> super.getContext(name);
+        };
     }
 
     @Override
@@ -107,6 +108,7 @@ public class PlayerEndsSpeakingDenizen extends BukkitScriptEvent implements List
         player = new PlayerTag(event.getPlayer());
         message = new ElementTag(event.getMessage());
         bytes = event.getBytes();
+        activationId = event.getActivationId();
         Bukkit.getScheduler().runTask(Altenizen.instance, () -> fire(event));
     }
 

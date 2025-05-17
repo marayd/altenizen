@@ -23,6 +23,7 @@
 
 package org.marayd.altenizen.plasmo;
 
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.marayd.altenizen.customevent.bukkit.PlayerEndsSpeaking;
 import org.marayd.altenizen.customevent.bukkit.PlayerSpeaksEvent;
@@ -79,12 +80,15 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
     private static final String MODEL_FOLDER = "plugins/Altenizen/models";
     private static Encryption encryption;
 
+
     public PlasmoVoiceServer getVoice() {
         return voiceServer;
     }
     private ProximityServerActivationHelper proximityHelper;
 
+    @Getter
     public static ServerSourceLine sourceLine;
+    
     private static Model voskModel;
     @Override
     public void onAddonInitialize() {
@@ -209,7 +213,7 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
 
             recognizeFromBytesAsync(audioBytes).thenAccept(result -> {
                 if (result != null) {
-                    PlayerEndsSpeaking endEvent = new PlayerEndsSpeaking(player.getInstance().getInstance(), result, audioBytes);
+                    PlayerEndsSpeaking endEvent = new PlayerEndsSpeaking(player.getInstance().getInstance(), result, audioBytes, event.getPacket().getActivationId());
                     Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
                             Bukkit.getPluginManager().callEvent(endEvent)
                     );

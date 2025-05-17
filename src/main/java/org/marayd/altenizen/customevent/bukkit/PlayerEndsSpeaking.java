@@ -30,18 +30,22 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
+import java.util.UUID;
+
 @Getter
 public class PlayerEndsSpeaking extends Event {
     private static final HandlerList HANDLERS = new HandlerList();
     private final Player player;
     private final String message;
     private final byte[] bytes;
+    private final UUID activationId;
 
-    public PlayerEndsSpeaking(@NotNull Player player, @NotNull String message, byte[] bytes) {
+    public PlayerEndsSpeaking(Player player, String message, byte[] bytes, UUID uuid) {
         super(true);
         this.player = player;
         this.message = new JSONObject(message).getString("text");
         this.bytes = bytes;
+        this.activationId = uuid;
     }
 
     @Override

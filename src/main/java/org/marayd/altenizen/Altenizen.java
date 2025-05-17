@@ -29,6 +29,7 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.marayd.altenizen.command.ActivationCommand;
 import org.marayd.altenizen.processors.EntityTagProc;
 import org.marayd.altenizen.processors.PlasmoTagProc;
 import org.marayd.altenizen.command.DeleteAudioCommand;
@@ -56,9 +57,9 @@ public final class Altenizen extends JavaPlugin {
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         long uptimeSec = runtimeMXBean.getUptime() / 1000;
 
-        if (uptimeSec > 120) {
-            for (int i = 0; i < 5; i++) getLogger().warning("DON'T USE PLUGMAN OR /RELOAD. IT WILL BREAK ENTIRE PLUGIN.");
-        }
+        if (uptimeSec > 120)
+            for (int i = 0; i < 5; i++)
+                getLogger().warning("DON'T USE PLUGMAN OR /RELOAD. IT WILL BREAK ENTIRE PLUGIN.");
 
         getLogger().info("║ ■=■=■=■=■=■=■=■=■=■=■=■=■=■=■=■=■=■=■=■");
         getLogger().info("║ Altenizen");
@@ -118,6 +119,7 @@ public final class Altenizen extends JavaPlugin {
         DenizenCore.commandRegistry.registerCommand(PlasmoHookCommand.class);
         DenizenCore.commandRegistry.registerCommand(DownloadPlasmoSound.class);
         DenizenCore.commandRegistry.registerCommand(DeleteAudioCommand.class);
+        DenizenCore.commandRegistry.registerCommand(ActivationCommand.class);
 
         getLogger().info("║ Initializing Denizen Tags ║");
         new PlasmoTagProc();
