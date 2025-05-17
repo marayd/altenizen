@@ -93,8 +93,7 @@ tasks.jar {
 }
 
 tasks.build {
-
-    dependsOn("uploadFilesToFtp")
+    dependsOn("shadowJar")
 }
 
 tasks.uploadFilesToFtp {
