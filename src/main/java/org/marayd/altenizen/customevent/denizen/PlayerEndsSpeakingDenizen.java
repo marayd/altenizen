@@ -72,7 +72,7 @@ public class PlayerEndsSpeakingDenizen extends BukkitScriptEvent implements List
     @Override
     public ObjectTag getContext(String name) {
         return switch (name) {
-            case "message" -> player;
+            case "player" -> player;
             case "phrase" -> message;
             case "activation" -> new ElementTag(Altenizen.PLASMO_VOICE_ADDON.getVoice().getActivationManager().getActivationById(activationId).get().getName());
             default -> super.getContext(name);
