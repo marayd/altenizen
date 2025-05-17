@@ -1,3 +1,5 @@
+# Minimal docs
+
 ---
 
 ## 🎙️ Events
