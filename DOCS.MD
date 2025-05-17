@@ -82,7 +82,7 @@ For requests, contact the Author directly.
 
 Cloning or downloading this project directly from **GitHub** is **strictly prohibited**, even for non-commercial use.
 
-If you wish to use this project legitimately **(ONLY FOR NON-COMMERCIAL PURPOSES)**, you must obtain builds through the official **Jenkins pipeline**:
+If you wish to use this project legitimately **(ONLY FOR NON-COMMERCIAL PURPOSES)**, you must obtain builds (YOU MAY DOWNLOAD ONLY ARTIFACTS) through the official **Jenkins pipeline**:
 
 🔗 [https://jenkins.mryd.org/](https://jenkins.mryd.org/)
 
