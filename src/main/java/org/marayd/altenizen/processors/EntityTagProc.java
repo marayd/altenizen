@@ -30,7 +30,7 @@ import org.marayd.altenizen.Altenizen;
 
 import java.util.Objects;
 
-public class EntityTagProc {
+public final class EntityTagProc {
     private static final Altenizen plugin = Altenizen.instance;
 
     public static void start() {

@@ -41,7 +41,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PlasmoTagProc extends PseudoObjectTagBase<PlasmoTagProc> {
+public final class PlasmoTagProc extends PseudoObjectTagBase<PlasmoTagProc> {
     private static final Altenizen plugin = Altenizen.instance;
 //    private static final DenizenAddon denizenAddon = new DenizenAddon();
 
