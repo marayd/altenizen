@@ -11,18 +11,18 @@ Access to or viewing of the Software does not grant you any rights under copyrig
 
 3. Permitted Use
 The Software is provided solely for read-only access and informational purposes. You may view the source code, but you may not:
-
-Use, run, execute, or compile the Software;
-
-Modify, adapt, or create derivative works based on the Software;
-
-Copy, reproduce, or distribute the Software, in whole or in part;
-
-Fork or otherwise duplicate the repository or its contents;
-
-Use the Software for any commercial purpose or deployment;
-
-Incorporate any part of the Software into another work.
+  
+  Use, run, execute, or compile the Software;
+  
+  Modify, adapt, or create derivative works based on the Software;
+  
+  Copy, reproduce, or distribute the Software, in whole or in part;
+  
+  Fork or otherwise duplicate the repository or its contents;
+  
+  Use the Software for any commercial purpose or deployment;
+  
+  Incorporate any part of the Software into another work.
 
 4. Prohibited Use Without Explicit Permission
 Any use of the Software beyond read-only viewing requires prior express written permission from the Author. This includes, but is not limited to, internal use, research, commercial activities, redistribution, or incorporation into other projects.
