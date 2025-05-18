@@ -23,74 +23,64 @@
 
 package org.marayd.altenizen.plasmo;
 
-import su.plo.voice.api.audio.codec.AudioEncoder;
-import su.plo.voice.api.audio.codec.CodecException;
-import su.plo.voice.api.encryption.Encryption;
-import su.plo.voice.api.encryption.EncryptionException;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 import su.plo.voice.api.server.audio.provider.ArrayAudioFrameProvider;
-import su.plo.voice.api.server.audio.source.AudioSender;
-import su.plo.voice.api.server.audio.source.ServerAudioSource;
-import su.plo.voice.api.server.audio.source.ServerDirectSource;
-import su.plo.voice.api.server.audio.source.ServerStaticSource;
-import su.plo.voice.api.server.audio.source.ServerEntitySource;
+import su.plo.voice.api.server.audio.source.*;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import javax.sound.sampled.*;
 
 public final class PlayerAudioSender {
     public static HashMap<ServerAudioSource<?>, AudioSender> sources = new HashMap<>();
 
-    public static void playSoundToPlayer(PlasmoVoiceServer voiceServer, ServerDirectSource source, byte[] audioData) {
+    public static void playAudioFromBytes(PlasmoVoiceServer voiceServer, ServerAudioSource<?> source, byte[] audioData_, Short distance) {
         CompletableFuture.runAsync(() -> {
-            short[] samples = convertBytesToShorts(audioData);
-
-            ArrayAudioFrameProvider frameProvider = new ArrayAudioFrameProvider(voiceServer, false);
-            frameProvider.addSamples(samples);
-
-            AudioSender audioSender = source.createAudioSender(frameProvider);
-            audioSender.start();
-
-            sources.put(source, audioSender);
-
-            audioSender.onStop(() -> {
-                frameProvider.close();
-                source.remove();
-                sources.remove(source);
-            });
-        });
-    }
-
-    public static void playSoundOnLocation(PlasmoVoiceServer voiceServer, ServerStaticSource source, byte[] audioData, short distance) {
-        CompletableFuture.runAsync(() -> {
-            short[] samples = convertBytesToShorts(audioData);
-            AudioEncoder encoder = voiceServer.createOpusEncoder(false);
-            Encryption encryption = voiceServer.getDefaultEncryption();
-
             try {
-                byte[] encodedFrame = encoder.encode(samples);
-                byte[] encryptedFrame = encryption.encrypt(encodedFrame);
-                source.sendAudioFrame(encryptedFrame, encodedFrame.length, distance);
-            } catch (CodecException | EncryptionException e) {
-                throw new RuntimeException(e);
+                byte[] audioData = audioData_;
+
+                if (audioData.length % 2 != 0) {
+                    byte[] padded = Arrays.copyOf(audioData, audioData.length + 1);
+                    audioData = padded;
+                }
+
+                short[] samples = convertBytesToShorts(audioData);
+
+
+                ArrayAudioFrameProvider frameProvider = new ArrayAudioFrameProvider(voiceServer, false);
+                frameProvider.addSamples(samples);
+
+                AudioSender audioSender = createSender(source, frameProvider, distance);
+                audioSender.start();
+                sources.put(source, audioSender);
+
+                audioSender.onStop(() -> {
+                    frameProvider.close();
+                    source.remove();
+                    sources.remove(source);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
 
-    public static void playSoundToPlayer(PlasmoVoiceServer voiceServer, ServerDirectSource source, String audioFilePath) {
+    public static void playAudioFromFile(PlasmoVoiceServer voiceServer, ServerAudioSource<?> source, String filePath, Short distance) {
         CompletableFuture.runAsync(() -> {
             try {
-                CompletableFuture<short[]> samples = loadAudioFile(audioFilePath);
+                short[] samples = loadAudioFile(filePath).get();
                 ArrayAudioFrameProvider frameProvider = new ArrayAudioFrameProvider(voiceServer, false);
-                frameProvider.addSamples(samples.get());
+                frameProvider.addSamples(samples);
 
-                AudioSender audioSender = source.createAudioSender(frameProvider);
+                AudioSender audioSender = createSender(source, frameProvider, distance);
                 audioSender.start();
-
                 sources.put(source, audioSender);
 
                 audioSender.onStop(() -> {
@@ -104,50 +94,13 @@ public final class PlayerAudioSender {
         });
     }
 
-    public static void playSoundOnLocation(PlasmoVoiceServer voiceServer, ServerStaticSource source, String audioFilePath, short distance) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                CompletableFuture<short[]> samples = loadAudioFile(audioFilePath);
-                ArrayAudioFrameProvider frameProvider = new ArrayAudioFrameProvider(voiceServer, false);
-                frameProvider.addSamples(samples.get());
-
-                AudioSender audioSender = source.createAudioSender(frameProvider, distance);
-                audioSender.start();
-
-                sources.put(source, audioSender);
-
-                audioSender.onStop(() -> {
-                    frameProvider.close();
-                    source.remove();
-                    sources.remove(source);
-                });
-            } catch (ExecutionException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
-    public static void playSoundOnEntity(PlasmoVoiceServer voiceServer, ServerEntitySource source, String audioFilePath, short distance) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                CompletableFuture<short[]> samples = loadAudioFile(audioFilePath);
-                ArrayAudioFrameProvider frameProvider = new ArrayAudioFrameProvider(voiceServer, false);
-                frameProvider.addSamples(samples.get());
-
-                AudioSender audioSender = source.createAudioSender(frameProvider, distance);
-                audioSender.start();
-
-                sources.put(source, audioSender);
-
-                audioSender.onStop(() -> {
-                    frameProvider.close();
-                    source.remove();
-                    sources.remove(source);
-                });
-            } catch (ExecutionException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
+    private static AudioSender createSender(ServerAudioSource<?> source, ArrayAudioFrameProvider provider, Short distance) {
+        return switch (source) {
+            case ServerDirectSource direct -> direct.createAudioSender(provider);
+            case ServerStaticSource stat when distance != null -> stat.createAudioSender(provider, distance);
+            case ServerEntitySource entity when distance != null -> entity.createAudioSender(provider, distance);
+            case null, default -> throw new IllegalArgumentException("Unsupported source type or missing distance");
+        };
     }
 
     private static short[] convertBytesToShorts(byte[] audioData) {
@@ -156,7 +109,15 @@ public final class PlayerAudioSender {
 
         for (int i = 0; i < shortArrayLength; i++) {
             int byteIndex = i * 2;
-            samples[i] = (short) ((audioData[byteIndex] & 0xFF) | (audioData[byteIndex + 1] << 8));
+
+            if (byteIndex + 1 >= audioData.length) {
+                System.err.println("[WARNING] Incomplete sample at index " + i + " (insufficient bytes), skipping.");
+                break;
+            }
+
+            int low = audioData[byteIndex] & 0xFF;
+            int high = audioData[byteIndex + 1] << 8;
+            samples[i] = (short) (high | low);
         }
 
         return samples;
@@ -191,4 +152,14 @@ public final class PlayerAudioSender {
         });
     }
 
+    private static byte[] parseByteArray(String s) {
+        s = s.replaceAll("\\[|\\]|\\s", "");
+        if (s.isEmpty()) return new byte[0];
+        String[] parts = s.split(",");
+        byte[] result = new byte[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            result[i] = Byte.parseByte(parts[i]);
+        }
+        return result;
+    }
 }

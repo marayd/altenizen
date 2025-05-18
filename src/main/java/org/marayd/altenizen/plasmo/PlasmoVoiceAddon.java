@@ -25,6 +25,7 @@ package org.marayd.altenizen.plasmo;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.marayd.altenizen.Altenizen;
 import org.marayd.altenizen.customevent.bukkit.PlayerEndsSpeaking;
 import org.marayd.altenizen.customevent.bukkit.PlayerSpeaksEvent;
 import org.vosk.Model;
@@ -40,12 +41,10 @@ import su.plo.voice.api.encryption.Encryption;
 import su.plo.voice.api.encryption.EncryptionException;
 import su.plo.voice.api.event.EventPriority;
 import su.plo.voice.api.server.PlasmoVoiceServer;
-import su.plo.voice.api.server.audio.capture.ProximityServerActivationHelper;
 import su.plo.voice.api.server.audio.line.ServerSourceLine;
 import su.plo.voice.api.server.audio.source.ServerStaticSource;
 import su.plo.voice.api.server.event.audio.source.PlayerSpeakEndEvent;
 import su.plo.voice.api.server.event.audio.source.PlayerSpeakEvent;
-import org.marayd.altenizen.Altenizen;
 import su.plo.voice.server.player.BaseVoicePlayer;
 
 import javax.sound.sampled.AudioFileFormat;
@@ -57,7 +56,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
@@ -169,7 +170,32 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
                 e.printStackTrace();
             }
         });
+        speakingBuffers.remove(playerId);
     }
+
+    private static final long BUFFER_DURATION_MS = 300;
+
+    private static class AudioBuffer {
+        private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        private long lastFlushTime = System.currentTimeMillis();
+
+        public synchronized void append(byte[] data) throws IOException {
+            buffer.write(data);
+        }
+
+        public synchronized boolean shouldFlush() {
+            return (System.currentTimeMillis() - lastFlushTime) >= BUFFER_DURATION_MS;
+        }
+
+        public synchronized byte[] flush() {
+            byte[] data = buffer.toByteArray();
+            buffer.reset();
+            lastFlushTime = System.currentTimeMillis();
+            return data;
+        }
+    }
+
+    private final ConcurrentHashMap<String, AudioBuffer> speakingBuffers = new ConcurrentHashMap<>();
 
     public void onPlayerSpeak(PlayerSpeakEvent event) {
         byte[] encryptedFrame = event.getPacket().getData();
@@ -187,20 +213,25 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
             for (short sample : audioFrame) {
                 byteBuffer.putShort(sample);
             }
-
             byte[] audioBytes = byteBuffer.array();
 
-            playerAudioBuffer.computeIfAbsent(playerId, id -> new ByteArrayOutputStream()).write(audioBytes);
+            AudioBuffer audioBuffer = speakingBuffers.computeIfAbsent(playerId, id -> new AudioBuffer());
+            audioBuffer.append(audioBytes);
 
-            PlayerSpeaksEvent speaksEvent = new PlayerSpeaksEvent(player.getInstance().getInstance(), audioBytes);
-            Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
-                    Bukkit.getPluginManager().callEvent(speaksEvent)
-            );
+            if (audioBuffer.shouldFlush()) {
+                byte[] combinedAudio = audioBuffer.flush();
+                PlayerSpeaksEvent speaksEvent = new PlayerSpeaksEvent(player.getInstance().getInstance(), combinedAudio, event);
+
+                Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
+                        Bukkit.getPluginManager().callEvent(speaksEvent)
+                );
+            }
 
         } catch (EncryptionException | CodecException | IOException e) {
             e.printStackTrace();
         }
     }
+
 
     public void onPlayerSpeakEnd(PlayerSpeakEndEvent event) {
         var player = (BaseVoicePlayer<?>) event.getPlayer();

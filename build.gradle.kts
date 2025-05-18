@@ -24,6 +24,7 @@ repositories {
     maven("https://jitpack.io")
     maven("https://mvn.0110.be/releases")
     maven("https://repo.dmulloy2.net/repository/public/")
+
 }
 
 dependencies {

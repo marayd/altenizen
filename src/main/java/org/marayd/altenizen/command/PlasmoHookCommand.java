@@ -1,223 +1,182 @@
-/*
- * Copyright (c) mryd - https://mryd.org/
- * All rights reserved.
- *
- * This file is part of the Altenizen project: https://github.com/marayd/altenizen
- *
- * Custom Proprietary License:
- * This source code is the exclusive property of the Author (mryd).
- * Access to this code is provided for viewing purposes only.
- *
- * You MAY NOT:
- * - Use, compile, run, or execute this code.
- * - Modify, distribute, or reproduce any part of this code.
- * - Create forks or derivative works.
- * - Use this code for commercial purposes.
- *
- * No rights or licenses are granted by default. By accessing this file,
- * you acknowledge and agree to the terms of the proprietary license:
- * https://github.com/marayd/altenizen/blob/main/License.md
- *
- * For permissions or inquiries, contact the Author directly.
- */
-
 package org.marayd.altenizen.command;
 
-import com.denizenscript.denizen.objects.*;
-import com.denizenscript.denizencore.exceptions.InvalidArgumentsException;
-import com.denizenscript.denizencore.objects.*;
+import com.denizenscript.denizen.objects.EntityTag;
+import com.denizenscript.denizen.objects.LocationTag;
+import com.denizenscript.denizen.objects.PlayerTag;
+import com.denizenscript.denizen.utilities.Utilities;
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.scripts.ScriptEntry;
 import com.denizenscript.denizencore.scripts.commands.AbstractCommand;
 import com.denizenscript.denizencore.scripts.commands.Holdable;
+import com.denizenscript.denizencore.scripts.commands.generator.ArgDefaultNull;
+import com.denizenscript.denizencore.scripts.commands.generator.ArgName;
+import com.denizenscript.denizencore.scripts.commands.generator.ArgPrefixed;
 import org.marayd.altenizen.plasmo.PlayerAudioSender;
 import su.plo.slib.api.server.entity.McServerEntity;
 import su.plo.slib.api.server.position.ServerPos3d;
 import su.plo.slib.api.server.world.McServerWorld;
-import su.plo.voice.api.server.audio.source.*;
+import su.plo.voice.api.server.audio.source.AudioSender;
+import su.plo.voice.api.server.audio.source.ServerAudioSource;
 import su.plo.voice.api.server.player.VoiceServerPlayer;
 
-import java.util.List;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.marayd.altenizen.Altenizen.*;
+import static org.marayd.altenizen.Altenizen.PLASMO_VOICE_ADDON;
+import static org.marayd.altenizen.Altenizen.instance;
 import static org.marayd.altenizen.plasmo.PlasmoVoiceAddon.sourceLine;
 
 public class PlasmoHookCommand extends AbstractCommand implements Holdable {
-    private final List<CommandArgumentDefinition> argumentDefinitions = List.of(
-            new CommandArgumentDefinition("path", false, (entry, arg) -> {
-                if (arg.matchesPrefix("path") && !entry.hasObject("path")) {
-                    entry.addObject("path", arg.asElement());
-                }
-            }),
-            new CommandArgumentDefinition("location", false, (entry, arg) -> {
-                if (arg.matchesPrefix("location") && !entry.hasObject("location")) {
-                    entry.addObject("location", arg.asType(LocationTag.class));
-                }
-            }),
-            new CommandArgumentDefinition("distance", false, (entry, arg) -> {
-                if (arg.matchesPrefix("distance") && !entry.hasObject("distance")) {
-                    entry.addObject("distance", arg.asElement());
-                }
-            }),
-            new CommandArgumentDefinition("id", false, (entry, arg) -> {
-                if (arg.matchesPrefix("id") && !entry.hasObject("id")) {
-                    entry.addObject("id", arg.asElement());
-                }
-            }),
-            new CommandArgumentDefinition("entity", false, (entry, arg) -> {
-                if (arg.matchesPrefix("entity") && !entry.hasObject("entity")) {
-                    entry.addObject("entity", arg.asType(EntityTag.class));
-                }
-            })
-    );
 
     public PlasmoHookCommand() {
         setName("plasmo");
-        setSyntax("plasmo (send|stop|take|playonloc|playonentity) path:<path> location:<loc> distance:<distance> [id:<id>]");
-        isProcedural = true;
+        setSyntax("plasmo [action:<action>] [path:<path>] [location:<location>] [distance:<distance>] [entity:<entity>] [id:<id>] [source:<source>]");
+        setRequiredArguments(1, -1);
+        isProcedural = false;
+        autoCompile();
     }
 
-    @Override
-    public void parseArgs(ScriptEntry entry) throws InvalidArgumentsException {
-        String action = null;
-
-        for (Argument arg : entry) {
-            if (action == null && arg.matches("send", "stop", "take", "playonloc", "playonentity")) {
-                action = arg.getValue();
-                entry.addObject("action", new ElementTag(action));
-                continue;
-            }
-
-            boolean handled = false;
-            for (CommandArgumentDefinition def : argumentDefinitions) {
-                def.parser().parse(entry, arg);
-                if (entry.hasObject(def.name())) {
-                    handled = true;
-                    break;
-                }
-            }
-
-            if (!handled) {
-                arg.reportUnhandled();
-            }
-        }
-
-        if (action == null) {
-            throw new InvalidArgumentsException("You must specify an action: send, stop, take, playonloc, or playonentity.");
-        }
-
-        switch (action) {
-            case "send" -> require(entry, "path");
-            case "stop" -> require(entry, "id");
-            case "playonloc" -> {
-                require(entry, "location");
-                require(entry, "distance");
-                require(entry, "path");
-            }
-            case "playonentity" -> {
-                require(entry, "entity");
-                require(entry, "distance");
-                require(entry, "path");
-            }
-        }
-    }
-
-
-    private void require(ScriptEntry entry, String key) throws InvalidArgumentsException {
-        if (!entry.hasObject(key)) {
-            throw new InvalidArgumentsException("Missing required argument: " + key);
-        }
-    }
-
-    @Override
-    public void execute(ScriptEntry scriptEntry) {
-        String action = scriptEntry.getElement("action").asString();
-        PlayerTag player = com.denizenscript.denizen.utilities.Utilities.getEntryPlayer(scriptEntry);
+    public static void autoExecute(
+            ScriptEntry scriptEntry,
+            @ArgPrefixed @ArgName("action") ElementTag action,
+            @ArgPrefixed @ArgDefaultNull @ArgName("path") ElementTag path,
+            @ArgPrefixed @ArgDefaultNull @ArgName("bytes") ElementTag bytes,
+            @ArgPrefixed @ArgDefaultNull @ArgName("location") LocationTag location,
+            @ArgPrefixed @ArgDefaultNull @ArgName("distance") ElementTag distance,
+            @ArgPrefixed @ArgDefaultNull @ArgName("entity") EntityTag entity,
+            @ArgPrefixed @ArgDefaultNull @ArgName("id") ElementTag id,
+            @ArgPrefixed @ArgDefaultNull @ArgName("source") ElementTag sourceName
+    ) {
+        PlayerTag player = Utilities.getEntryPlayer(scriptEntry);
 
         VoiceServerPlayer voicePlayer = PLASMO_VOICE_ADDON.getVoice().getPlayerManager()
-                .getPlayerByName(player.getName())
-                .orElseThrow(() -> new IllegalStateException("Voice player not found"));
+                .getPlayerByName(player.getName()).orElse(null);
 
-        switch (action) {
-            case "send" -> handleSend(scriptEntry, voicePlayer);
-            case "stop" -> handleStop(scriptEntry);
-            case "take" -> handleTake();
-            case "playonloc" -> handlePlayOnLoc(scriptEntry);
-            case "playonentity" -> handlePlayOnEntity(scriptEntry);
+        String act = action.asLowerString();
+        byte[] byteArray = null;
+        if (bytes != null) {
+            byteArray = Base64.getDecoder().decode(bytes.asString());
+        }
+        switch (act) {
+            case "send" -> handleSend(path, sourceName, scriptEntry, voicePlayer, byteArray);
+            case "stop" -> handleStop(id);
+            case "playonloc" -> handlePlayOnLoc(path, location, distance, sourceName, scriptEntry, byteArray);
+            case "playonentity" -> handlePlayOnEntity(path, entity, distance, sourceName, scriptEntry, byteArray);
+            default -> throw new IllegalArgumentException("Unknown action: " + act);
         }
     }
 
-    private void handleSend(ScriptEntry entry, VoiceServerPlayer player) {
-        String path = entry.getElement("path").asString();
-        ServerDirectSource source = sourceLine.createDirectSource(player, false);
-        entry.saveObject("audio_id", new ElementTag(source.getId().toString()));
+    private static void handleSend(ElementTag path, ElementTag sourceName, ScriptEntry entry, VoiceServerPlayer player, byte[] bytes) {
+        ServerAudioSource<?> source = SourceCommand.sources.get(sourceName != null ? sourceName.asString() : "");
+        if (source == null) {
+            source = sourceLine.createDirectSource(player, false);
+        }
 
+        entry.saveObject("audio_id", new ElementTag(source.getId().toString()));
+        if (bytes != null) {
+            PlayerAudioSender.playAudioFromBytes(
+                    PLASMO_VOICE_ADDON.getVoice(),
+                    source,
+                    bytes,
+                    null);
+            return;
+        }
         try {
-            PlayerAudioSender.playSoundToPlayer(PLASMO_VOICE_ADDON.getVoice(), source,
-                    instance.getConfig().getString("settings.default-path") + "/" + path);
+            PlayerAudioSender.playAudioFromFile(
+                    PLASMO_VOICE_ADDON.getVoice(),
+                    source,
+                    instance.getConfig().getString("settings.default-path") + "/" + path.asString(),
+                    null
+            );
         } catch (Exception e) {
             throw new RuntimeException("Failed to send audio: " + e.getMessage(), e);
         }
     }
 
-    private void handleStop(ScriptEntry entry) {
-        UUID id = UUID.fromString(entry.getElement("id").asString());
-        Optional<ServerAudioSource<?>> sourceOpt = sourceLine.getSourceById(id);
+    private static void handlePlayOnLoc(ElementTag path, LocationTag loc, ElementTag distance, ElementTag sourceName, ScriptEntry entry, byte[] bytes) {
+        if (distance == null) {
+            throw new IllegalArgumentException("Missing path/location/distance for playonloc");
+        }
+        McServerWorld world = null;
+        try {
+            world = PLASMO_VOICE_ADDON.getVoice().getMinecraftServer()
+                    .getWorlds().stream()
+                    .filter(w -> w.getName().equals(loc.getWorldName()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("World not found"));
+        } catch (Exception e) {
+            // Do nothing
+        }
+        ServerAudioSource<?> source = SourceCommand.sources.get(sourceName != null ? sourceName.asString() : "");
+        if (source == null) {
+            source = sourceLine.createStaticSource(new ServerPos3d(world, loc.x(), loc.y(), loc.z()), false);
+        }
 
+        source.setIconVisible(false);
+        entry.saveObject("audio_id", new ElementTag(source.getId().toString()));
+        if (bytes != null) {
+            PlayerAudioSender.playAudioFromBytes(
+                    PLASMO_VOICE_ADDON.getVoice(),
+                    source,
+                    bytes,
+                    Short.parseShort(distance.asString()));
+            return;
+        }
+        PlayerAudioSender.playAudioFromFile(
+                PLASMO_VOICE_ADDON.getVoice(),
+                source,
+                instance.getConfig().getString("settings.default-path") + "/" + path.asString(),
+                Short.parseShort(distance.asString())
+        );
+    }
+
+    private static void handlePlayOnEntity(ElementTag path, EntityTag ent, ElementTag distance, ElementTag sourceName, ScriptEntry entry, byte[] bytes) {
+        if (distance == null) {
+            throw new IllegalArgumentException("Missing path/entity/distance for playonentity");
+        }
+        McServerEntity serverEntity = null;
+        try {
+            serverEntity = PLASMO_VOICE_ADDON.getVoice().getMinecraftServer()
+                    .getEntityByInstance(ent.getBukkitEntity());
+        } catch (Exception e) {
+            // Do nothing
+        }
+        ServerAudioSource<?> source = SourceCommand.sources.get(sourceName != null ? sourceName.asString() : "");
+        if (source == null) {
+            source = sourceLine.createEntitySource(serverEntity, false);
+        }
+
+        entry.saveObject("audio_id", new ElementTag(source.getId().toString()));
+        if (bytes != null) {
+            PlayerAudioSender.playAudioFromBytes(
+                    PLASMO_VOICE_ADDON.getVoice(),
+                    source,
+                    bytes,
+                    Short.parseShort(distance.asString()));
+            return;
+        }
+        PlayerAudioSender.playAudioFromFile(
+                PLASMO_VOICE_ADDON.getVoice(),
+                source,
+                instance.getConfig().getString("settings.default-path") + "/" + path.asString(),
+                Short.parseShort(distance.asString())
+        );
+    }
+
+    private static void handleStop(ElementTag id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Missing 'id' for stop action");
+        }
+
+        UUID uuid = UUID.fromString(id.asString());
+        Optional<ServerAudioSource<?>> sourceOpt = sourceLine.getSourceById(uuid);
         sourceOpt.ifPresentOrElse(
                 source -> {
                     AudioSender sender = PlayerAudioSender.sources.get(source);
                     if (sender != null) sender.stop();
                 },
-                () -> System.err.println("Audio source not found for ID: " + id)
+                () -> System.err.println("Audio source not found for ID: " + uuid)
         );
     }
-
-    private void handleTake() {
-        instance.getLogger().severe("PLASMO TAKE is not implemented. Use PLASMO SEND instead.");
-        throw new UnsupportedOperationException("PLASMO TAKE is under development.");
-    }
-
-    private void handlePlayOnLoc(ScriptEntry entry) {
-        LocationTag loc = entry.getObjectTag("location");
-        String path = entry.getElement("path").asString();
-        short distance = Short.parseShort(entry.getElement("distance").asString());
-
-        McServerWorld world = PLASMO_VOICE_ADDON.getVoice().getMinecraftServer()
-                .getWorlds().stream()
-                .filter(w -> w.getName().equals(loc.getWorldName()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("World not found"));
-
-        ServerStaticSource source = sourceLine.createStaticSource(new ServerPos3d(world, loc.x(), loc.y(), loc.z()), false);
-        source.setIconVisible(false);
-        entry.saveObject("audio_id", new ElementTag(source.getId().toString()));
-
-        PlayerAudioSender.playSoundOnLocation(PLASMO_VOICE_ADDON.getVoice(), source,
-                instance.getConfig().getString("settings.default-path") + "/" + path, distance);
-    }
-
-    private void handlePlayOnEntity(ScriptEntry entry) {
-        EntityTag ent = entry.getObjectTag("entity");
-        McServerEntity serverEntity = PLASMO_VOICE_ADDON.getVoice().getMinecraftServer().getEntityByInstance(ent.getBukkitEntity());
-        String path = entry.getElement("path").asString();
-        short distance = Short.parseShort(entry.getElement("distance").asString());
-
-        ServerEntitySource source = sourceLine.createEntitySource(serverEntity, false);
-        entry.saveObject("audio_id", new ElementTag(source.getId().toString()));
-
-        PlayerAudioSender.playSoundOnEntity(PLASMO_VOICE_ADDON.getVoice(), source,
-                instance.getConfig().getString("settings.default-path") + "/" + path, distance);
-    }
-
-    private record CommandArgumentDefinition(String name, boolean required, ArgumentParser parser) {}
-
-    @FunctionalInterface
-    private interface ArgumentParser {
-        void parse(ScriptEntry entry, Argument arg) throws InvalidArgumentsException;
-    }
 }
-
-

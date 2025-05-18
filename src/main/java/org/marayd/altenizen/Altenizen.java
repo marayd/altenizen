@@ -29,12 +29,9 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.marayd.altenizen.command.ActivationCommand;
+import org.marayd.altenizen.command.*;
 import org.marayd.altenizen.processors.EntityTagProc;
 import org.marayd.altenizen.processors.PlasmoTagProc;
-import org.marayd.altenizen.command.DeleteAudioCommand;
-import org.marayd.altenizen.command.DownloadPlasmoSound;
-import org.marayd.altenizen.command.PlasmoHookCommand;
 import org.marayd.altenizen.customevent.denizen.PlayerEndsSpeakingDenizen;
 import org.marayd.altenizen.customevent.denizen.PlayerSpeaksEventDenizen;
 import org.marayd.altenizen.plasmo.PlasmoVoiceAddon;
@@ -155,8 +152,10 @@ public final class Altenizen extends JavaPlugin {
 
         getLogger().info("║ Initializing Denizen Commands ║");
         DenizenCore.commandRegistry.registerCommand(PlasmoHookCommand.class);
+        DenizenCore.commandRegistry.registerCommand(SourceCommand.class);
         DenizenCore.commandRegistry.registerCommand(DownloadPlasmoSound.class);
         DenizenCore.commandRegistry.registerCommand(DeleteAudioCommand.class);
+        DenizenCore.commandRegistry.registerCommand(ActivationCommand.class);
         DenizenCore.commandRegistry.registerCommand(ActivationCommand.class);
 
         getLogger().info("║ Initializing Denizen Tags ║");
