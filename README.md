@@ -1,15 +1,22 @@
-# Original creator - (mryd, marayd, MrydDev).
+# Altenizen — Proprietary Software
 
-# the code is distributed under a proprietary license and belongs to marayd only.
+**Author / Owner:** mryd (also known as marayd / marayddev)  
+**Original Creator:** mryd / marayddev  
+**License:** Custom Proprietary License – © marayd
 
 ---
 
-**Project Name:** Altenizen
+🚫 **This software is NOT open-source. No permission is granted to run, copy, modify, redistribute, or reuse any portion of this codebase unless explicitly allowed by the license.**
 
-**Github:** [https://github.com/marayd/altenizen](https://github.com/marayd/altenizen)
+🔐 The project is licensed under a **strict proprietary license**.  
+📄 Full license terms: [`LICENSE.md`](./LICENSE.md)
 
-**Jenkins:** [https://jenkins.mryd.org/job/altenizen/](https://jenkins.mryd.org/job/altenizen/)
+---
 
-**Website:** [https://mryd.org](https://mryd.org)
+## 📍 Project Info
 
-**Author / Owner:** mryd (also known as marayd / marayddev)
+- **GitHub:** [https://github.com/marayd/altenizen](https://github.com/marayd/altenizen)
+- **Jenkins:** [https://jenkins.mryd.org/job/altenizen/](https://jenkins.mryd.org/job/altenizen/)
+- **Website:** [https://mryd.org](https://mryd.org)
+
+> Any unauthorized usage (forking, compilation, redistribution, or incorporation into other works) may result in takedown actions and legal enforcement in accordance with applicable laws.
