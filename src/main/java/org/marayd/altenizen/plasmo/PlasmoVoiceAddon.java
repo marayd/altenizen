@@ -121,7 +121,7 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
 
         sourceLine = voiceServer.getSourceLineManager().createBuilder(
                 Altenizen.PLASMO_VOICE_ADDON,
-                "Altenizen",
+                "altenizen",
                 "pv.activation.altenizen",
                 "plasmovoice:textures/icons/speaker_priority.png",
                 10
