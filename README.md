@@ -9,7 +9,7 @@
 🚫 **This software is NOT open-source. No permission is granted to run, copy, modify, redistribute, or reuse any portion of this codebase unless explicitly allowed by the license.**
 
 🔐 The project is licensed under a **strict proprietary license**.  
-📄 Full license terms: [`LICENSE.md`](./LICENSE.md)
+📄 Full license terms: [`LICENSE.md`](./License.md)
 
 ---
 
