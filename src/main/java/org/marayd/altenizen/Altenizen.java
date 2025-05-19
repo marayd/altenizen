@@ -69,7 +69,7 @@ public final class Altenizen extends JavaPlugin {
             String line;
             getLogger().info("====== License ======");
             while ((line = reader.readLine()) != null) {
-                Bukkit.getLogger().info(line);
+                getLogger().info(line);
             }
             getLogger().info("====== End of License ======");
             reader.close();
@@ -155,7 +155,6 @@ public final class Altenizen extends JavaPlugin {
         DenizenCore.commandRegistry.registerCommand(SourceCommand.class);
         DenizenCore.commandRegistry.registerCommand(DownloadPlasmoSound.class);
         DenizenCore.commandRegistry.registerCommand(DeleteAudioCommand.class);
-        DenizenCore.commandRegistry.registerCommand(ActivationCommand.class);
         DenizenCore.commandRegistry.registerCommand(ActivationCommand.class);
 
         getLogger().info("║ Initializing Denizen Tags ║");

@@ -35,12 +35,13 @@ public class PlayerSpeaksEvent extends Event {
     private static final HandlerList HANDLERS = new HandlerList();
     private final Player player;
     private final byte[] bytes;
-    private final PlayerSpeakEvent plasomEvent;
+    private final PlayerSpeakEvent plasmoEvent;
+
     public PlayerSpeaksEvent(Player player, byte[] bytes, PlayerSpeakEvent plasmoEvent) {
         super(true);
         this.player = player;
         this.bytes = bytes;
-        this.plasomEvent = plasmoEvent;
+        this.plasmoEvent = plasmoEvent;
     }
     @Override
     public @NotNull HandlerList getHandlers() {

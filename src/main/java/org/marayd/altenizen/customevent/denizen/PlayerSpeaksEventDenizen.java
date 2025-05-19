@@ -79,7 +79,7 @@ public class PlayerSpeaksEventDenizen extends BukkitScriptEvent implements Liste
     public void onPlayerSpeakEnds(PlayerSpeaksEvent event) {
         player = new PlayerTag(event.getPlayer());
         bytes = event.getBytes();
-        activationId = event.getPlasomEvent().getPacket().getActivationId();
+        activationId = event.getPlasmoEvent().getPacket().getActivationId();
         Bukkit.getScheduler().runTask(Altenizen.instance, () -> fire(event));
     }
 

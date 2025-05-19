@@ -173,24 +173,33 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
         speakingBuffers.remove(playerId);
     }
 
-    private static final long BUFFER_DURATION_MS = 300;
+
+    private static final long BUFFER_DURATION_NS = 300_000_000;
+    private static final int MAX_AUDIO_BUFFER_SIZE = 4096 * 10;
 
     private static class AudioBuffer {
-        private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        private long lastFlushTime = System.currentTimeMillis();
+        private final ByteBuffer buffer = ByteBuffer.allocateDirect(MAX_AUDIO_BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+        private long lastFlushTime = System.nanoTime();
 
-        public synchronized void append(byte[] data) throws IOException {
-            buffer.write(data);
+        public synchronized void append(byte[] data) {
+            if (buffer.remaining() < data.length) {
+                flush();
+            }
+            buffer.put(data, 0, Math.min(data.length, buffer.remaining()));
         }
 
         public synchronized boolean shouldFlush() {
-            return (System.currentTimeMillis() - lastFlushTime) >= BUFFER_DURATION_MS;
+            return (System.nanoTime() - lastFlushTime) >= BUFFER_DURATION_NS || buffer.position() >= MAX_AUDIO_BUFFER_SIZE;
         }
 
         public synchronized byte[] flush() {
-            byte[] data = buffer.toByteArray();
-            buffer.reset();
-            lastFlushTime = System.currentTimeMillis();
+            int size = buffer.position();
+            if (size == 0) return new byte[0];
+            buffer.flip();
+            byte[] data = new byte[size];
+            buffer.get(data);
+            buffer.clear();
+            lastFlushTime = System.nanoTime();
             return data;
         }
     }
@@ -203,7 +212,6 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
         String playerId = player.getInstance().getName();
 
         AudioDecoder decoder = getOrCreateDecoder(playerId);
-        Encryption encryption = voiceServer.getDefaultEncryption();
 
         try {
             byte[] decryptedFrame = encryption.decrypt(encryptedFrame);
@@ -215,36 +223,47 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
             }
             byte[] audioBytes = byteBuffer.array();
 
-            AudioBuffer audioBuffer = speakingBuffers.computeIfAbsent(playerId, id -> new AudioBuffer());
-            audioBuffer.append(audioBytes);
-
-            if (audioBuffer.shouldFlush()) {
-                byte[] combinedAudio = audioBuffer.flush();
-                PlayerSpeaksEvent speaksEvent = new PlayerSpeaksEvent(player.getInstance().getInstance(), combinedAudio, event);
-
-                Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
-                        Bukkit.getPluginManager().callEvent(speaksEvent)
-                );
+            ByteArrayOutputStream audioStream = playerAudioBuffer.computeIfAbsent(playerId, id -> new ByteArrayOutputStream());
+            try {
+                audioStream.write(audioBytes);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
-        } catch (EncryptionException | CodecException | IOException e) {
+            AudioBuffer audioBuffer = speakingBuffers.computeIfAbsent(playerId, id -> new AudioBuffer());
+            audioBuffer.append(audioBytes);
+            if (audioBuffer.shouldFlush()) {
+
+                byte[] combinedAudio = audioBuffer.flush();
+
+                if (combinedAudio.length > 0) {
+                    PlayerSpeaksEvent speaksEvent = new PlayerSpeaksEvent(player.getInstance().getInstance(), combinedAudio, event);
+                    Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
+                            Bukkit.getPluginManager().callEvent(speaksEvent)
+                    );
+                }
+            }
+
+        } catch (EncryptionException | CodecException e) {
             e.printStackTrace();
         }
     }
-
 
     public void onPlayerSpeakEnd(PlayerSpeakEndEvent event) {
         var player = (BaseVoicePlayer<?>) event.getPlayer();
         String playerId = player.getInstance().getName();
 
         ByteArrayOutputStream audioStream = playerAudioBuffer.get(playerId);
-
         if (audioStream != null && audioStream.size() > 0) {
             byte[] audioBytes = audioStream.toByteArray();
-
             recognizeFromBytesAsync(audioBytes).thenAccept(result -> {
                 if (result != null) {
-                    PlayerEndsSpeaking endEvent = new PlayerEndsSpeaking(player.getInstance().getInstance(), result, audioBytes, event.getPacket().getActivationId());
+                    PlayerEndsSpeaking endEvent = new PlayerEndsSpeaking(
+                            player.getInstance().getInstance(),
+                            result,
+                            audioBytes,
+                            event.getPacket().getActivationId()
+                    );
                     Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
                             Bukkit.getPluginManager().callEvent(endEvent)
                     );
@@ -259,17 +278,6 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
     }
 
 
-    public void playSoundOnLocation(ServerStaticSource source, short[] audioData, short distance, String playerId) {
-        AudioEncoder encoder = getOrCreateEncoder(playerId);
-
-        try {
-            byte[] encodedFrame = encoder.encode(audioData);
-            byte[] encryptedFrame = encryption.encrypt(encodedFrame);
-            source.sendAudioFrame(encryptedFrame, encodedFrame.length, distance);
-        } catch (CodecException | EncryptionException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public static void saveToWav(byte[] audioBytes, String dir) throws IOException {
         AudioFormat format = new AudioFormat(48000, 16, 1, true, false);
