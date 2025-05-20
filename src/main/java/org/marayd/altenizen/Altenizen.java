@@ -156,6 +156,7 @@ public final class Altenizen extends JavaPlugin {
         DenizenCore.commandRegistry.registerCommand(DownloadPlasmoSound.class);
         DenizenCore.commandRegistry.registerCommand(DeleteAudioCommand.class);
         DenizenCore.commandRegistry.registerCommand(ActivationCommand.class);
+        DenizenCore.commandRegistry.registerCommand(VoskCommand.class);
 
         getLogger().info("║ Initializing Denizen Tags ║");
         new PlasmoTagProc();

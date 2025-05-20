@@ -256,22 +256,14 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
         ByteArrayOutputStream audioStream = playerAudioBuffer.get(playerId);
         if (audioStream != null && audioStream.size() > 0) {
             byte[] audioBytes = audioStream.toByteArray();
-            recognizeFromBytesAsync(audioBytes).thenAccept(result -> {
-                if (result != null) {
-                    PlayerEndsSpeaking endEvent = new PlayerEndsSpeaking(
-                            player.getInstance().getInstance(),
-                            result,
-                            audioBytes,
-                            event.getPacket().getActivationId()
-                    );
-                    Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
-                            Bukkit.getPluginManager().callEvent(endEvent)
-                    );
-                }
-            }).exceptionally(ex -> {
-                ex.printStackTrace();
-                return null;
-            });
+            PlayerEndsSpeaking endEvent = new PlayerEndsSpeaking(
+                    player.getInstance().getInstance(),
+                    audioBytes,
+                    event.getPacket().getActivationId()
+            );
+            Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
+                    Bukkit.getPluginManager().callEvent(endEvent)
+            );
         }
 
         releaseResources(playerId);
