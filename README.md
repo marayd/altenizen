@@ -2,7 +2,7 @@
 
 **Author / Owner:** mryd (also known as marayd / marayddev)  
 **Original Creator:** mryd / marayddev  
-**License:** Custom Proprietary License – © marayd
+**License:** Apache 2.0 
 
 ---
 
