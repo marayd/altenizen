@@ -86,5 +86,10 @@
       <option name="name" value="ParchmentMC" />
       <option name="url" value="https://maven.parchmentmc.org/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven11" />
+      <option name="name" value="maven11" />
+      <option name="url" value="https://raw.githubusercontent.com/DFKI-MLT/Maven-Repository/main" />
+    </remote-repository>
   </component>
 </project>

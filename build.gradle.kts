@@ -14,8 +14,8 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
     google()
-    maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://oss.sonatype.org/content/groups/public/")
     maven("https://maven.citizensnpcs.co/repo")
     maven("https://nexus.scarsz.me/content/groups/public/")
@@ -24,7 +24,6 @@ repositories {
     maven("https://jitpack.io")
     maven("https://mvn.0110.be/releases")
     maven("https://repo.dmulloy2.net/repository/public/")
-
 }
 
 dependencies {
@@ -39,6 +38,7 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok:1.18.36")
     annotationProcessor("org.projectlombok:lombok:1.18.36")
+
 }
 
 // ==========================

@@ -47,8 +47,7 @@ public final class PlayerAudioSender {
                 byte[] audioData = audioData_;
 
                 if (audioData.length % 2 != 0) {
-                    byte[] padded = Arrays.copyOf(audioData, audioData.length + 1);
-                    audioData = padded;
+                    audioData = Arrays.copyOf(audioData, audioData.length + 1);
                 }
 
                 short[] samples = convertBytesToShorts(audioData);
