@@ -42,4 +42,4 @@ Elevate your scripting experience — and your players' — with voice-driven ev
 - **GitHub:** [https://github.com/marayd/altenizen](https://github.com/marayd/altenizen)
 - **Jenkins:** [https://jenkins.mryd.org/job/altenizen/](https://jenkins.mryd.org/job/altenizen/)
 - **Website:** [https://mryd.org](https://mryd.org)
-
+- **Docs** [https://www.notion.so/](https://www.notion.so/1f70ac845ff28018a50fd8735e73c1af?v=1f70ac845ff280799336000cca81b659)
