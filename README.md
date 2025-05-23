@@ -43,3 +43,6 @@ Elevate your scripting experience — and your players' — with voice-driven ev
 - **Jenkins:** [https://jenkins.mryd.org/job/altenizen/](https://jenkins.mryd.org/job/altenizen/)
 - **Website:** [https://mryd.org](https://mryd.org)
 - **Docs** [https://www.notion.so/](https://www.notion.so/1f70ac845ff28018a50fd8735e73c1af?v=1f70ac845ff280799336000cca81b659)
+
+Thanks to Nybik_YT for PR (https://discord.gg/FsZb3V2num). 
+Denizen СНГ — it's a Russian-speaking community that provides support for Denizen. They're actively using this addon, so feel free to ask them for help (even if you don't speak Russian! 😊)
