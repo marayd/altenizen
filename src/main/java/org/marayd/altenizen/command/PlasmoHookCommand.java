@@ -11,10 +11,13 @@ import com.denizenscript.denizencore.scripts.commands.Holdable;
 import com.denizenscript.denizencore.scripts.commands.generator.ArgDefaultNull;
 import com.denizenscript.denizencore.scripts.commands.generator.ArgName;
 import com.denizenscript.denizencore.scripts.commands.generator.ArgPrefixed;
+import org.marayd.altenizen.plasmo.PlasmoVoiceAddon;
 import org.marayd.altenizen.plasmo.PlayerAudioSender;
 import su.plo.slib.api.server.entity.McServerEntity;
 import su.plo.slib.api.server.position.ServerPos3d;
 import su.plo.slib.api.server.world.McServerWorld;
+import su.plo.voice.api.audio.codec.CodecException;
+import su.plo.voice.api.encryption.EncryptionException;
 import su.plo.voice.api.server.audio.source.AudioSender;
 import su.plo.voice.api.server.audio.source.ServerAudioSource;
 import su.plo.voice.api.server.player.VoiceServerPlayer;
@@ -57,6 +60,12 @@ public class PlasmoHookCommand extends AbstractCommand implements Holdable {
         byte[] byteArray = null;
         if (bytes != null) {
             byteArray = Base64.getDecoder().decode(bytes.asString());
+            try {
+                PlasmoVoiceAddon.decryptAndDecode(byteArray);
+
+            } catch (EncryptionException | CodecException e) {
+                throw new RuntimeException(e);
+            }
         }
         switch (act) {
             case "send" -> handleSend(path, sourceName, scriptEntry, voicePlayer, byteArray);

@@ -2,9 +2,9 @@ package org.marayd.altenizen.plasmo;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 import org.marayd.altenizen.Altenizen;
 import org.marayd.altenizen.customevent.bukkit.PlayerEndsSpeaking;
-import org.marayd.altenizen.customevent.bukkit.PlayerSpeaksEvent;
 import org.vosk.Model;
 import org.vosk.Recognizer;
 import su.plo.voice.api.addon.AddonInitializer;
@@ -12,14 +12,12 @@ import su.plo.voice.api.addon.AddonLoaderScope;
 import su.plo.voice.api.addon.InjectPlasmoVoice;
 import su.plo.voice.api.addon.annotation.Addon;
 import su.plo.voice.api.audio.codec.AudioDecoder;
-import su.plo.voice.api.audio.codec.AudioEncoder;
 import su.plo.voice.api.audio.codec.CodecException;
 import su.plo.voice.api.encryption.Encryption;
 import su.plo.voice.api.encryption.EncryptionException;
 import su.plo.voice.api.event.EventPriority;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 import su.plo.voice.api.server.audio.line.ServerSourceLine;
-import su.plo.voice.api.server.audio.source.ServerStaticSource;
 import su.plo.voice.api.server.event.audio.source.PlayerSpeakEndEvent;
 import su.plo.voice.api.server.event.audio.source.PlayerSpeakEvent;
 import su.plo.voice.server.player.BaseVoicePlayer;
@@ -31,11 +29,7 @@ import javax.sound.sampled.AudioSystem;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
@@ -78,7 +72,7 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
                 if (!isSuccess) instance.getLogger().warning("Couldn't create directory");
             }
 
-            File modelPath = new File(modelDir, Objects.requireNonNull(instance.getConfig().getString("vosk.model-name")));
+            File modelPath = new File(modelDir, instance.getConfig().getString("vosk.model-name"));
             if (!modelPath.exists()) {
                 System.out.println("Модель не найдена, начинаем загрузку...");
                 downloadAndExtractModel(instance.getConfig().getString("vosk.model-link"), modelDir);
@@ -125,103 +119,24 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
 
 
 
-    private final ConcurrentHashMap<String, AudioEncoder> encoders = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, AudioDecoder> decoders = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ByteArrayOutputStream> playerAudioBuffer = new ConcurrentHashMap<>();
-
-    public AudioEncoder getOrCreateEncoder(String playerId) {
-        return encoders.computeIfAbsent(playerId, id -> voiceServer.createOpusEncoder(false));
-    }
-
-    public AudioDecoder getOrCreateDecoder(String playerId) {
-        return decoders.computeIfAbsent(playerId, id -> voiceServer.createOpusDecoder(false));
-    }
-
-    public void releaseResources(String playerId) {
-        Optional.ofNullable(encoders.remove(playerId)).ifPresent(AudioEncoder::close);
-        Optional.ofNullable(decoders.remove(playerId)).ifPresent(AudioDecoder::close);
-        Optional.ofNullable(playerAudioBuffer.remove(playerId)).ifPresent(buffer -> {
-            try {
-                buffer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        speakingBuffers.remove(playerId);
-    }
-
-
-    private static final long BUFFER_DURATION_NS = 300_000_000;
-    private static final int MAX_AUDIO_BUFFER_SIZE = 4096 * 10;
-
-    private static class AudioBuffer {
-        private final ByteBuffer buffer = ByteBuffer.allocateDirect(MAX_AUDIO_BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
-        private long lastFlushTime = System.nanoTime();
-
-        public synchronized void append(byte[] data) {
-            if (buffer.remaining() < data.length) {
-                flush();
-            }
-            buffer.put(data, 0, Math.min(data.length, buffer.remaining()));
-        }
-
-        public synchronized boolean shouldFlush() {
-            return (System.nanoTime() - lastFlushTime) >= BUFFER_DURATION_NS || buffer.position() >= MAX_AUDIO_BUFFER_SIZE;
-        }
-
-        public synchronized byte[] flush() {
-            int size = buffer.position();
-            if (size == 0) return new byte[0];
-            buffer.flip();
-            byte[] data = new byte[size];
-            buffer.get(data);
-            buffer.clear();
-            lastFlushTime = System.nanoTime();
-            return data;
-        }
-    }
-
-    private final ConcurrentHashMap<String, AudioBuffer> speakingBuffers = new ConcurrentHashMap<>();
 
     public void onPlayerSpeak(PlayerSpeakEvent event) {
         byte[] encryptedFrame = event.getPacket().getData();
         var player = (BaseVoicePlayer<?>) event.getPlayer();
         String playerId = player.getInstance().getName();
 
-        AudioDecoder decoder = getOrCreateDecoder(playerId);
-
         try {
             byte[] decryptedFrame = encryption.decrypt(encryptedFrame);
-            short[] audioFrame = decoder.decode(decryptedFrame);
-
-            ByteBuffer byteBuffer = ByteBuffer.allocate(audioFrame.length * 2).order(ByteOrder.LITTLE_ENDIAN);
-            for (short sample : audioFrame) {
-                byteBuffer.putShort(sample);
-            }
-            byte[] audioBytes = byteBuffer.array();
 
             ByteArrayOutputStream audioStream = playerAudioBuffer.computeIfAbsent(playerId, id -> new ByteArrayOutputStream());
             try {
-                audioStream.write(audioBytes);
+                audioStream.write(decryptedFrame);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            AudioBuffer audioBuffer = speakingBuffers.computeIfAbsent(playerId, id -> new AudioBuffer());
-            audioBuffer.append(audioBytes);
-            if (audioBuffer.shouldFlush()) {
-
-                byte[] combinedAudio = audioBuffer.flush();
-
-                if (combinedAudio.length > 0) {
-                    PlayerSpeaksEvent speaksEvent = new PlayerSpeaksEvent(player.getInstance().getInstance(), combinedAudio, event);
-                    Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
-                            Bukkit.getPluginManager().callEvent(speaksEvent)
-                    );
-                }
-            }
-
-        } catch (EncryptionException | CodecException e) {
+        } catch (EncryptionException e) {
             e.printStackTrace();
         }
     }
@@ -230,7 +145,7 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
         var player = (BaseVoicePlayer<?>) event.getPlayer();
         String playerId = player.getInstance().getName();
 
-        ByteArrayOutputStream audioStream = playerAudioBuffer.get(playerId);
+        ByteArrayOutputStream audioStream = playerAudioBuffer.remove(playerId);
         if (audioStream != null && audioStream.size() > 0) {
             byte[] audioBytes = audioStream.toByteArray();
             PlayerEndsSpeaking endEvent = new PlayerEndsSpeaking(
@@ -242,21 +157,52 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
                     Bukkit.getPluginManager().callEvent(endEvent)
             );
         }
-
-        releaseResources(playerId);
     }
 
 
+    public static short[] decryptAndDecode(byte[] encryptedFrame) throws EncryptionException, CodecException {
+        Encryption encryption = Altenizen.getPLASMO_VOICE_ADDON().voiceServer.getDefaultEncryption();
+        byte[] decryptedFrame = encryption.decrypt(encryptedFrame);
 
-    public static void saveToWav(byte[] audioBytes, String dir) throws IOException {
+        try (AudioDecoder decoder = Altenizen.getPLASMO_VOICE_ADDON().voiceServer.createOpusDecoder(false)) {
+            return decoder.decode(decryptedFrame);
+        }
+    }
+
+    public static void saveToWav(byte[] encryptedFrame, String outputFilePath) throws IOException {
+
+        try {
+            short[] audioFrame = decryptAndDecode(encryptedFrame);
+            byte[] pcmData = shortsToBytes(audioFrame);
+            AudioInputStream audioInputStream = getAudioInputStream(pcmData);
+
+            File outputFile = new File(outputFilePath);
+            AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, outputFile);
+
+        } catch (EncryptionException e) {
+            throw new RuntimeException("Failed to decrypt audio frame", e);
+        } catch (CodecException e) {
+            throw new RuntimeException("Failed to decode audio frame", e);
+        }
+    }
+
+    public static byte[] shortsToBytes(short[] audioFrame) {
+        ByteArrayOutputStream pcmOut = new ByteArrayOutputStream();
+        for (short sample : audioFrame) {
+            pcmOut.write(sample & 0xFF);
+            pcmOut.write((sample >> 8) & 0xFF);
+        }
+        return pcmOut.toByteArray();
+    }
+
+    private static @NotNull AudioInputStream getAudioInputStream(byte[] pcmData) {
         AudioFormat format = new AudioFormat(48000, 16, 1, true, false);
-
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(audioBytes);
-        AudioInputStream audioInputStream = new AudioInputStream(byteArrayInputStream, format, audioBytes.length / format.getFrameSize());
-
-        File wavFile = new File(dir);
-
-        AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, wavFile);
+        ByteArrayInputStream bais = new ByteArrayInputStream(pcmData);
+        return new AudioInputStream(
+                bais,
+                format,
+                pcmData.length / format.getFrameSize()
+        );
     }
 
 
