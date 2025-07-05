@@ -126,19 +126,13 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
         var player = (BaseVoicePlayer<?>) event.getPlayer();
         String playerId = player.getInstance().getName();
 
+        ByteArrayOutputStream audioStream = playerAudioBuffer.computeIfAbsent(playerId, id -> new ByteArrayOutputStream());
         try {
-            byte[] decryptedFrame = encryption.decrypt(encryptedFrame);
-
-            ByteArrayOutputStream audioStream = playerAudioBuffer.computeIfAbsent(playerId, id -> new ByteArrayOutputStream());
-            try {
-                audioStream.write(decryptedFrame);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        } catch (EncryptionException e) {
+            audioStream.write(encryptedFrame);
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public void onPlayerSpeakEnd(PlayerSpeakEndEvent event) {

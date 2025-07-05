@@ -60,12 +60,13 @@ public class PlasmoHookCommand extends AbstractCommand implements Holdable {
         byte[] byteArray = null;
         if (bytes != null) {
             byteArray = Base64.getDecoder().decode(bytes.asString());
-            try {
-                PlasmoVoiceAddon.decryptAndDecode(byteArray);
-
-            } catch (EncryptionException | CodecException e) {
-                throw new RuntimeException(e);
-            }
+//            try {
+//                short[] samples = PlasmoVoiceAddon.decryptAndDecode(byteArray);
+//                byteArray = PlasmoVoiceAddon.shortsToBytes(samples);
+//
+//            } catch (EncryptionException | CodecException e) {
+//                throw new RuntimeException(e);
+//            }
         }
         switch (act) {
             case "send" -> handleSend(path, sourceName, scriptEntry, voicePlayer, byteArray);
@@ -114,9 +115,7 @@ public class PlasmoHookCommand extends AbstractCommand implements Holdable {
                     .filter(w -> w.getName().equals(loc.getWorldName()))
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("World not found"));
-        } catch (Exception e) {
-            // Do nothing
-        }
+        } catch (Exception ignored) {}
         ServerAudioSource<?> source = SourceCommand.sources.get(sourceName != null ? sourceName.asString() : "");
         if (source == null) {
             source = sourceLine.createStaticSource(new ServerPos3d(world, loc.x(), loc.y(), loc.z()), false);

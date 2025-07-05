@@ -150,15 +150,4 @@ public final class PlayerAudioSender {
             }
         });
     }
-
-    private static byte[] parseByteArray(String s) {
-        s = s.replaceAll("\\[|\\]|\\s", "");
-        if (s.isEmpty()) return new byte[0];
-        String[] parts = s.split(",");
-        byte[] result = new byte[parts.length];
-        for (int i = 0; i < parts.length; i++) {
-            result[i] = Byte.parseByte(parts[i]);
-        }
-        return result;
-    }
 }
