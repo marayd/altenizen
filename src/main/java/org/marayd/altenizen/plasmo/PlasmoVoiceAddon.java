@@ -203,31 +203,46 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
     public static CompletableFuture<String> recognizeFromBytesAsync(byte[] audioBytes) {
         return CompletableFuture.supplyAsync(() -> {
             try {
+                // Decrypt and decode the audio bytes first
+                short[] pcmShorts = decryptAndDecode(audioBytes);
+                byte[] pcmBytes = shortsToBytes(pcmShorts); // Convert shorts to bytes
+
                 Model model = voskModel;
+                InputStream audioStream = new ByteArrayInputStream(pcmBytes);
 
-                InputStream audioStream = new ByteArrayInputStream(audioBytes);
-
+                // The format should match the decoded PCM data
                 AudioFormat format = new AudioFormat(48000, 16, 1, true, false);
-                AudioInputStream audioInputStream = new AudioInputStream(audioStream, format, audioBytes.length);
+                AudioInputStream audioInputStream = new AudioInputStream(
+                        audioStream,
+                        format,
+                        pcmBytes.length / format.getFrameSize()
+                );
 
-                Recognizer recognizer = new Recognizer(model, 48000);
+                Recognizer recognizer = new Recognizer(model, 48000f); // Vosk expects sample rate as float
 
-                byte[] buffer = new byte[4000];
-                StringBuilder result = new StringBuilder();
+                byte[] buffer = new byte[4096]; // Common buffer size
+                // Vosk documentation suggests feeding audio in chunks and checking acceptWaveForm
+                // For continuous recognition, one might append results.
+                // For final result of a single utterance, this is okay.
 
-                while (audioInputStream.read(buffer) != -1) {
-                    if (recognizer.acceptWaveForm(buffer, buffer.length)) {
-                        result.append(recognizer.getResult());
-                    }
+                int nread;
+                while ((nread = audioInputStream.read(buffer)) > 0) {
+                    recognizer.acceptWaveForm(buffer, nread);
                 }
-
                 return recognizer.getFinalResult();
 
             } catch (IOException e) {
+                instance.getLogger().severe("IOException during Vosk recognition: " + e.getMessage());
+                e.printStackTrace();
+            } catch (EncryptionException e) {
+                instance.getLogger().severe("EncryptionException during decryptAndDecode for Vosk: " + e.getMessage());
+                e.printStackTrace();
+            } catch (CodecException e) {
+                instance.getLogger().severe("CodecException during decryptAndDecode for Vosk: " + e.getMessage());
                 e.printStackTrace();
             }
 
-            return null;
+            return null; // Return null or an empty string indicating failure
         });
     }
 
