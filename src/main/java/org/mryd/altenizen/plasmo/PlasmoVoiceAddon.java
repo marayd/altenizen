@@ -194,36 +194,43 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
     }
 
 
-    public static CompletableFuture<String> recognizeFromBytesAsync(byte[] audioBytes) {
+    public static CompletableFuture<String> recognizeFromBytesAsync(byte[] encryptedAudioBytes) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Model model = voskModel;
+                AudioDecoder decoder = Altenizen.getPLASMO_VOICE_ADDON().voiceServer.createOpusDecoder(false);
+                byte[] decryptedFrame = encryption.decrypt(encryptedAudioBytes);
+                short[] audioSamples = decoder.decode(decryptedFrame);
 
-                InputStream audioStream = new ByteArrayInputStream(audioBytes);
+                byte[] pcmBytes = new byte[audioSamples.length * 2];
+                for (int i = 0; i < audioSamples.length; i++) {
+                    pcmBytes[i * 2] = (byte) (audioSamples[i] & 0xFF);
+                    pcmBytes[i * 2 + 1] = (byte) ((audioSamples[i] >> 8) & 0xFF);
+                }
 
+                InputStream stream = new ByteArrayInputStream(pcmBytes);
                 AudioFormat format = new AudioFormat(48000, 16, 1, true, false);
-                AudioInputStream audioInputStream = new AudioInputStream(audioStream, format, audioBytes.length);
+                AudioInputStream inputStream = new AudioInputStream(stream, format, pcmBytes.length / 2);
 
-                Recognizer recognizer = new Recognizer(model, 48000);
-
+                Recognizer recognizer = new Recognizer(voskModel, 48000);
                 byte[] buffer = new byte[4000];
                 StringBuilder result = new StringBuilder();
 
-                while (audioInputStream.read(buffer) != -1) {
-                    if (recognizer.acceptWaveForm(buffer, buffer.length)) {
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    if (recognizer.acceptWaveForm(buffer, bytesRead)) {
                         result.append(recognizer.getResult());
                     }
                 }
 
-                return recognizer.getFinalResult();
+                result.append(recognizer.getFinalResult());
+                return result.toString();
 
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException | CodecException | EncryptionException e) {
+                throw new RuntimeException("Failed to process audio", e);
             }
-
-            return null;
         });
     }
+
 
     private void downloadAndExtractModel(String modelUrl, File outputDir) throws IOException {
         URL url = new URL(modelUrl);
