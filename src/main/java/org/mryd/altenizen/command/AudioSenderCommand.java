@@ -57,13 +57,7 @@ public class AudioSenderCommand extends AbstractCommand {
 
         switch (typeBytes) {
             case "encrypted" -> isEncrypted = true;
-            case "unencrypted" -> isEncrypted = false;
             case "opus" -> isOpusEncoded = true;
-            case "raw" -> isEncrypted = false;
-            default -> {
-                isEncrypted = false;
-                isOpusEncoded = false;
-            }
         }
 
         if (source == null) {
