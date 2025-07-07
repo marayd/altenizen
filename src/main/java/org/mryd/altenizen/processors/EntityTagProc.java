@@ -12,10 +12,10 @@ public final class EntityTagProc {
 
     public static void start() {
         if (EntityTag.tagProcessor != null) {
-            EntityTag.tagProcessor.registerMechanism("entity_scale", false, ElementTag.class, (object, _, value) -> {
+            EntityTag.tagProcessor.registerMechanism("entity_scale", false, ElementTag.class, (object, mechanism, value) -> {
                 Objects.requireNonNull(object.getLivingEntity().getAttribute(Attribute.SCALE)).setBaseValue(value.asDouble());
             });
-            EntityTag.tagProcessor.registerMechanism("entity_jump_strength", false, ElementTag.class, (object, _, value) -> {
+            EntityTag.tagProcessor.registerMechanism("entity_jump_strength", false, ElementTag.class, (object, mechanism, value) -> {
                 Objects.requireNonNull(object.getLivingEntity().getAttribute(Attribute.JUMP_STRENGTH)).setBaseValue(value.asDouble());
             });
         }

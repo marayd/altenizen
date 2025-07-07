@@ -26,6 +26,16 @@ repositories {
     maven("https://repo.dmulloy2.net/repository/public/")
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+tasks.withType<JavaCompile> {
+    options.release.set(21)
+}
+
 dependencies {
     paperweight.paperDevBundle("1.21.4-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.23")
@@ -39,7 +49,6 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok:1.18.36")
     annotationProcessor("org.projectlombok:lombok:1.18.36")
-
 }
 
 // ==========================
@@ -62,7 +71,6 @@ val shadowJar130 = tasks.register<ShadowJar>("shadowJar130") {
         exclude(dependency("com.denizenscript:denizen"))
     }
 }
-
 
 // ==========================
 // Denizen 1.3.1 JAR Task
@@ -94,7 +102,6 @@ tasks.jar {
 tasks.build {
     dependsOn(shadowJar130, shadowJar131)
 }
-
 
 configure<UploadExtension> {
     host = properties.getOrDefault("ftp.host", "game5.gamely.pro").toString()

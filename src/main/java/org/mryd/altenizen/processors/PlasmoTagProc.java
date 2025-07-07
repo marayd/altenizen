@@ -29,15 +29,15 @@ public final class PlasmoTagProc extends PseudoObjectTagBase<PlasmoTagProc> {
 
     @Override
     public void register() {
-        tagProcessor.registerTag(ListTag.class, "list_audio", (_, _) -> new ListTag(getFilesFromDir(Altenizen.instance.getConfig().getString("settings.path-to-download"))));
-        tagProcessor.registerTag(ListTag.class, "active_sources", (_, _) ->
+        tagProcessor.registerTag(ListTag.class, "list_audio", (attribute, plasmoTagProc) -> new ListTag(getFilesFromDir(Altenizen.instance.getConfig().getString("settings.path-to-download"))));
+        tagProcessor.registerTag(ListTag.class, "active_sources", (attribute, plasmoTagProc) ->
                 new ListTag(PlasmoVoiceAddon.sourceLine.getSources()
                         .stream()
                         .map(source -> source.getId().toString())
                         .collect(Collectors.toList())
                 )
         );
-        tagProcessor.registerTag(ElementTag.class, "audio", (attribute, _) -> {
+        tagProcessor.registerTag(ElementTag.class, "audio", (attribute, plasmoTagProc) -> {
             attribute.fulfill(1);
             if (attribute.startsWith("length")) {
                 String stc = attribute.getParam();
