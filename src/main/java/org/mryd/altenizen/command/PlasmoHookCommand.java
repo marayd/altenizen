@@ -1,4 +1,4 @@
-package org.marayd.altenizen.command;
+package org.mryd.altenizen.command;
 
 import com.denizenscript.denizen.objects.EntityTag;
 import com.denizenscript.denizen.objects.LocationTag;
@@ -11,7 +11,7 @@ import com.denizenscript.denizencore.scripts.commands.Holdable;
 import com.denizenscript.denizencore.scripts.commands.generator.ArgDefaultNull;
 import com.denizenscript.denizencore.scripts.commands.generator.ArgName;
 import com.denizenscript.denizencore.scripts.commands.generator.ArgPrefixed;
-import org.marayd.altenizen.plasmo.PlayerAudioSender;
+import org.mryd.altenizen.plasmo.PlayerAudioSender;
 import su.plo.slib.api.server.entity.McServerEntity;
 import su.plo.slib.api.server.position.ServerPos3d;
 import su.plo.slib.api.server.world.McServerWorld;
@@ -23,9 +23,9 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.marayd.altenizen.Altenizen.PLASMO_VOICE_ADDON;
-import static org.marayd.altenizen.Altenizen.instance;
-import static org.marayd.altenizen.plasmo.PlasmoVoiceAddon.sourceLine;
+import static org.mryd.altenizen.Altenizen.PLASMO_VOICE_ADDON;
+import static org.mryd.altenizen.Altenizen.instance;
+import static org.mryd.altenizen.plasmo.PlasmoVoiceAddon.sourceLine;
 
 public class PlasmoHookCommand extends AbstractCommand implements Holdable {
 

@@ -1,9 +1,9 @@
-package org.marayd.altenizen.processors;
+package org.mryd.altenizen.processors;
 
 import com.denizenscript.denizen.objects.EntityTag;
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import org.bukkit.attribute.Attribute;
-import org.marayd.altenizen.Altenizen;
+import org.mryd.altenizen.Altenizen;
 
 import java.util.Objects;
 

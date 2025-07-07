@@ -1,4 +1,4 @@
-package org.marayd.altenizen.command;
+package org.mryd.altenizen.command;
 
 import com.denizenscript.denizencore.exceptions.InvalidArgumentsException;
 import com.denizenscript.denizencore.objects.Argument;
@@ -7,8 +7,8 @@ import com.denizenscript.denizencore.scripts.ScriptEntry;
 import com.denizenscript.denizencore.scripts.commands.AbstractCommand;
 import com.denizenscript.denizencore.scripts.commands.Holdable;
 import com.denizenscript.denizencore.utilities.debugging.Debug;
-import org.marayd.altenizen.Altenizen;
-import org.marayd.altenizen.plasmo.Activation;
+import org.mryd.altenizen.Altenizen;
+import org.mryd.altenizen.plasmo.Activation;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 import su.plo.voice.api.server.audio.capture.ServerActivation;
 

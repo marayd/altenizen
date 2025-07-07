@@ -1,4 +1,4 @@
-package org.marayd.altenizen.command;
+package org.mryd.altenizen.command;
 
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.scripts.ScriptEntry;
@@ -8,7 +8,7 @@ import com.denizenscript.denizencore.scripts.commands.generator.ArgName;
 import com.denizenscript.denizencore.scripts.commands.generator.ArgPrefixed;
 import com.denizenscript.denizencore.utilities.debugging.Debug;
 import org.json.JSONObject;
-import org.marayd.altenizen.plasmo.PlasmoVoiceAddon;
+import org.mryd.altenizen.plasmo.PlasmoVoiceAddon;
 
 import java.util.Base64;
 

@@ -1,31 +1,33 @@
-package org.marayd.altenizen.customevent.bukkit;
+package org.mryd.altenizen.customevent.bukkit;
 
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-import su.plo.voice.api.server.event.audio.source.PlayerSpeakEvent;
+
+import java.util.UUID;
 
 @Getter
-public class PlayerSpeaksEvent extends Event {
+public class PlayerEndsSpeaking extends Event {
     private static final HandlerList HANDLERS = new HandlerList();
     private final Player player;
     private final byte[] bytes;
-    private final PlayerSpeakEvent plasmoEvent;
+    private final UUID activationId;
 
-    public PlayerSpeaksEvent(Player player, byte[] bytes, PlayerSpeakEvent plasmoEvent) {
+    public PlayerEndsSpeaking(Player player, byte[] bytes, UUID uuid) {
         super(true);
         this.player = player;
         this.bytes = bytes;
-        this.plasmoEvent = plasmoEvent;
+        this.activationId = uuid;
     }
+
     @Override
     public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
-
     public static HandlerList getHandlerList() {
         return HANDLERS;
     }
+
 }

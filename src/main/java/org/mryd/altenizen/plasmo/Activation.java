@@ -1,7 +1,7 @@
-package org.marayd.altenizen.plasmo;
+package org.mryd.altenizen.plasmo;
 
 import lombok.Getter;
-import org.marayd.altenizen.Altenizen;
+import org.mryd.altenizen.Altenizen;
 import su.plo.voice.api.server.audio.capture.ProximityServerActivationHelper;
 import su.plo.voice.api.server.audio.capture.ServerActivation;
 

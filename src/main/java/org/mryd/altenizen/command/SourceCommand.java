@@ -1,4 +1,4 @@
-package org.marayd.altenizen.command;
+package org.mryd.altenizen.command;
 
 import com.denizenscript.denizen.objects.EntityTag;
 import com.denizenscript.denizen.objects.LocationTag;
@@ -23,8 +23,8 @@ import su.plo.voice.api.server.player.VoiceServerPlayer;
 
 import java.util.HashMap;
 
-import static org.marayd.altenizen.Altenizen.PLASMO_VOICE_ADDON;
-import static org.marayd.altenizen.plasmo.PlasmoVoiceAddon.sourceLine;
+import static org.mryd.altenizen.Altenizen.PLASMO_VOICE_ADDON;
+import static org.mryd.altenizen.plasmo.PlasmoVoiceAddon.sourceLine;
 
 public class SourceCommand extends AbstractCommand implements Holdable {
 

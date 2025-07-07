@@ -1,10 +1,10 @@
-package org.marayd.altenizen.plasmo;
+package org.mryd.altenizen.plasmo;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.marayd.altenizen.Altenizen;
-import org.marayd.altenizen.customevent.bukkit.PlayerEndsSpeaking;
-import org.marayd.altenizen.customevent.bukkit.PlayerSpeaksEvent;
+import org.mryd.altenizen.Altenizen;
+import org.mryd.altenizen.customevent.bukkit.PlayerEndsSpeaking;
+import org.mryd.altenizen.customevent.bukkit.PlayerSpeaksEvent;
 import org.vosk.Model;
 import org.vosk.Recognizer;
 import su.plo.voice.api.addon.AddonInitializer;
@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static org.marayd.altenizen.Altenizen.instance;
+import static org.mryd.altenizen.Altenizen.instance;
 
 @Addon(
         id = "pv-addon-altenizen",

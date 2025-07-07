@@ -21,7 +21,7 @@
  * For permissions or inquiries, contact the Author directly.
  */
 
-package org.marayd.altenizen.plasmo;
+package org.mryd.altenizen.plasmo;
 
 import su.plo.voice.api.server.PlasmoVoiceServer;
 import su.plo.voice.api.server.audio.provider.ArrayAudioFrameProvider;

@@ -1,12 +1,12 @@
-package org.marayd.altenizen.processors;
+package org.mryd.altenizen.processors;
 
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.objects.core.ListTag;
 import com.denizenscript.denizencore.scripts.commands.core.AdjustCommand;
 import com.denizenscript.denizencore.tags.PseudoObjectTagBase;
 import com.denizenscript.denizencore.tags.TagManager;
-import org.marayd.altenizen.Altenizen;
-import org.marayd.altenizen.plasmo.PlasmoVoiceAddon;
+import org.mryd.altenizen.Altenizen;
+import org.mryd.altenizen.plasmo.PlasmoVoiceAddon;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;

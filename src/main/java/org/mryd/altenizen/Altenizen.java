@@ -1,4 +1,4 @@
-package org.marayd.altenizen;
+package org.mryd.altenizen;
 
 import com.denizenscript.denizencore.DenizenCore;
 import com.denizenscript.denizencore.events.ScriptEvent;
@@ -6,12 +6,12 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.marayd.altenizen.command.*;
-import org.marayd.altenizen.processors.EntityTagProc;
-import org.marayd.altenizen.processors.PlasmoTagProc;
-import org.marayd.altenizen.customevent.denizen.PlayerEndsSpeakingDenizen;
-import org.marayd.altenizen.customevent.denizen.PlayerSpeaksEventDenizen;
-import org.marayd.altenizen.plasmo.PlasmoVoiceAddon;
+import org.mryd.altenizen.command.*;
+import org.mryd.altenizen.processors.EntityTagProc;
+import org.mryd.altenizen.processors.PlasmoTagProc;
+import org.mryd.altenizen.customevent.denizen.PlayerEndsSpeakingDenizen;
+import org.mryd.altenizen.customevent.denizen.PlayerSpeaksEventDenizen;
+import org.mryd.altenizen.plasmo.PlasmoVoiceAddon;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 
 import java.lang.management.ManagementFactory;

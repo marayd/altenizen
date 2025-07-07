@@ -8,7 +8,7 @@ plugins {
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
 }
 
-group = "org.mryd"
+group = "org.mryd.altenizen"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -28,6 +28,7 @@ repositories {
 
 dependencies {
     paperweight.paperDevBundle("1.21.4-R0.1-SNAPSHOT")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.23")
     compileOnly("su.plo.voice.server:paper:2.1.4")
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("com.denizenscript:denizen:1.3.0-SNAPSHOT")

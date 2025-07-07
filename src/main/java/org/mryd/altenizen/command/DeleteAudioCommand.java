@@ -1,11 +1,11 @@
-package org.marayd.altenizen.command;
+package org.mryd.altenizen.command;
 
 import com.denizenscript.denizencore.objects.Argument;
 import com.denizenscript.denizencore.objects.core.ElementTag;
 import com.denizenscript.denizencore.scripts.ScriptEntry;
 import com.denizenscript.denizencore.scripts.commands.AbstractCommand;
 import com.denizenscript.denizencore.scripts.commands.Holdable;
-import org.marayd.altenizen.Altenizen;
+import org.mryd.altenizen.Altenizen;
 
 import java.io.File;
 import java.util.Objects;
