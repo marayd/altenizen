@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class PlasmoTagProc extends PseudoObjectTagBase<PlasmoTagProc> {
-    private static final Altenizen plugin = Altenizen.instance;
-//    private static final DenizenAddon denizenAddon = new DenizenAddon();
 
     private static List<String> getFilesFromDir(String dir) {
         return Stream.of(Objects.requireNonNull(new File(dir).listFiles()))
@@ -31,15 +29,15 @@ public final class PlasmoTagProc extends PseudoObjectTagBase<PlasmoTagProc> {
 
     @Override
     public void register() {
-        tagProcessor.registerTag(ListTag.class, "list_audio", (attribute, object) -> new ListTag(getFilesFromDir(Altenizen.instance.getConfig().getString("settings.path-to-download"))));
-        tagProcessor.registerTag(ListTag.class, "active_sources", (attribute, object) ->
+        tagProcessor.registerTag(ListTag.class, "list_audio", (_, _) -> new ListTag(getFilesFromDir(Altenizen.instance.getConfig().getString("settings.path-to-download"))));
+        tagProcessor.registerTag(ListTag.class, "active_sources", (_, _) ->
                 new ListTag(PlasmoVoiceAddon.sourceLine.getSources()
                         .stream()
                         .map(source -> source.getId().toString())
                         .collect(Collectors.toList())
                 )
         );
-        tagProcessor.registerTag(ElementTag.class, "audio", (attribute, object) -> {
+        tagProcessor.registerTag(ElementTag.class, "audio", (attribute, _) -> {
             attribute.fulfill(1);
             if (attribute.startsWith("length")) {
                 String stc = attribute.getParam();

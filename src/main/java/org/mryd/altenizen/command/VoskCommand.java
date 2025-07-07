@@ -22,6 +22,7 @@ public class VoskCommand extends AbstractCommand implements Holdable {
         autoCompile();
     }
 
+    @SuppressWarnings("unused")
     public static void autoExecute(ScriptEntry scriptEntry,
                                    @ArgPrefixed @ArgName("bytes") ElementTag actionTag) {
         byte[] bytes = Base64.getDecoder().decode(actionTag.asString());

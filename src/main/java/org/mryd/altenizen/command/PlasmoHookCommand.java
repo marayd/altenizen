@@ -37,6 +37,7 @@ public class PlasmoHookCommand extends AbstractCommand implements Holdable {
         autoCompile();
     }
 
+    @SuppressWarnings("unused")
     public static void autoExecute(
             ScriptEntry scriptEntry,
             @ArgPrefixed @ArgName("action") ElementTag action,

@@ -38,6 +38,7 @@ public class SourceCommand extends AbstractCommand implements Holdable {
         autoCompile();
     }
 
+    @SuppressWarnings("unused")
     public static void autoExecute(ScriptEntry scriptEntry,
                                    @ArgPrefixed @ArgName("action") ElementTag actionTag,
                                    @ArgPrefixed @ArgName("name") ElementTag nameTag,
