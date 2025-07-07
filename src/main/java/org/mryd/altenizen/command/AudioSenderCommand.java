@@ -165,11 +165,7 @@ public class AudioSenderCommand extends AbstractCommand {
             }
         }
         if (framesField == null) {
-            try {
-                throw new NoSuchFieldException("Field 'frames' not found");
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            }
+            throw new RuntimeException("Field 'frames' not found");
         }
 
         framesField.setAccessible(true);
