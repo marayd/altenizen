@@ -8,6 +8,7 @@ import com.denizenscript.denizencore.scripts.commands.generator.ArgDefaultNull;
 import com.denizenscript.denizencore.scripts.commands.generator.ArgName;
 import com.denizenscript.denizencore.scripts.commands.generator.ArgPrefixed;
 import com.denizenscript.denizencore.utilities.debugging.Debug;
+import org.checkerframework.checker.units.qual.A;
 import org.mryd.altenizen.Altenizen;
 import org.mryd.altenizen.plasmo.PlayerAudioSender;
 import su.plo.voice.api.server.PlasmoVoiceServer;
@@ -42,13 +43,28 @@ public class AudioSenderCommand extends AbstractCommand {
                                    @ArgPrefixed @ArgName("name") ElementTag nameTag,
                                    @ArgPrefixed @ArgName("source") ElementTag sourceTag,
                                    @ArgPrefixed @ArgName("bytes") ElementTag bytesTag,
+                                   @ArgPrefixed @ArgName("typebytes") ElementTag typeBytesTag,
                                    @ArgDefaultNull @ArgPrefixed @ArgName("distance") ElementTag typeTag,
                                    @ArgDefaultNull @ArgPrefixed @ArgName("entity") EntityTag entity) {
         String action = actionTag.asLowerString();
         String name = nameTag.asString();
+        String typeBytes = typeBytesTag.asString();
         int distance = typeTag.asInt();
         var source = SourceCommand.sources.get(sourceTag.asString());
         byte[] bytes = Base64.getDecoder().decode(bytesTag.asString());
+        boolean isEncrypted = false;
+        boolean isOpusEncoded = false;
+
+        switch (typeBytes) {
+            case "encrypted" -> isEncrypted = true;
+            case "unencrypted" -> isEncrypted = false;
+            case "opus" -> isOpusEncoded = true;
+            case "raw" -> isEncrypted = false;
+            default -> {
+                isEncrypted = false;
+                isOpusEncoded = false;
+            }
+        }
 
         if (source == null) {
             throw new IllegalArgumentException("Source '" + sourceTag.asString() + "' does not exist.");
@@ -59,7 +75,7 @@ public class AudioSenderCommand extends AbstractCommand {
             case "start" -> startAudioSender(name);
             case "stop" -> stopAudioSender(name);
             case "delete" -> deleteAudioSender(name);
-            case "add" -> addBytesToAudioSender(source, name, bytes);
+            case "add" -> addBytesToAudioSender(source, name, bytes, isEncrypted, isOpusEncoded);
             default -> Debug.echoError("Invalid action: " + action);
         }
     }
@@ -102,17 +118,33 @@ public class AudioSenderCommand extends AbstractCommand {
         }
     }
 
-    private static void addBytesToAudioSender(ServerAudioSource<?> source, String name, byte[] bytes) {
+    private static void addBytesToAudioSender(ServerAudioSource<?> source, String name, byte[] bytes, boolean isEncrypted, boolean isOpusEncoded) {
         if (source == null) {
             throw new IllegalArgumentException("Source cannot be null.");
         }
         AudioSender audioSender = audioSenders.get(name);
-        ArrayAudioFrameProvider frameProvider = frameProviders.get(audioSender);
-        if (audioSender == null || frameProvider == null) {
-            throw new IllegalArgumentException("Audio sender with name '" + name + "' does not exist or has no frame provider.");
+        if (audioSender == null) {
+            throw new IllegalArgumentException("Audio sender with name '" + name + "' does not exist.");
         }
+
+        ArrayAudioFrameProvider frameProvider = frameProviders.get(audioSender);
+        if (frameProvider == null) {
+            throw new IllegalArgumentException("Audio sender '" + name + "' has no frame provider.");
+        }
+
         short[] samples = PlayerAudioSender.convertBytesToShorts(bytes);
-        frameProvider.addSamples(samples);
+        if (isEncrypted) {
+            try {
+                addFrame(frameProvider, bytes);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (isOpusEncoded) {
+            frameProvider.addEncodedFrame(bytes);
+        } else {
+            frameProvider.addSamples(samples);
+        }
+
 
         audioSender.start();
     }
@@ -120,7 +152,7 @@ public class AudioSenderCommand extends AbstractCommand {
 
     // The hell starts here
     // Good luck to anyone who tries to maintain this code in the future. (im totally sure that it'll be me)
-    private static void addFrame(Object providerInstance, byte[] frame) throws Exception {
+    private static void addFrame(Object providerInstance, byte[] frame) throws IllegalAccessException {
         Class<?> clazz = providerInstance.getClass();
         Field framesField = null;
         Class<?> current = clazz;
@@ -133,7 +165,11 @@ public class AudioSenderCommand extends AbstractCommand {
             }
         }
         if (framesField == null) {
-            throw new NoSuchFieldException("Field 'frames' not found");
+            try {
+                throw new NoSuchFieldException("Field 'frames' not found");
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         framesField.setAccessible(true);
