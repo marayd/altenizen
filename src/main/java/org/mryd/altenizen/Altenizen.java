@@ -25,9 +25,6 @@ public final class Altenizen extends JavaPlugin {
     @Getter
     public static final PlasmoVoiceAddon PLASMO_VOICE_ADDON = new PlasmoVoiceAddon();
 
-
-
-
     @Override
     public void onEnable() {
         instance = this;
@@ -94,11 +91,12 @@ public final class Altenizen extends JavaPlugin {
         if (isPluginAvailable("PlasmoVoice")) return;
 
         getLogger().info("║ Initializing Denizen Commands ║");
+        DenizenCore.commandRegistry.registerCommand(ActivationCommand.class);
+        DenizenCore.commandRegistry.registerCommand(AudioSenderCommand.class);
+        DenizenCore.commandRegistry.registerCommand(DeleteAudioCommand.class);
+        DenizenCore.commandRegistry.registerCommand(DownloadPlasmoSound.class);
         DenizenCore.commandRegistry.registerCommand(PlasmoHookCommand.class);
         DenizenCore.commandRegistry.registerCommand(SourceCommand.class);
-        DenizenCore.commandRegistry.registerCommand(DownloadPlasmoSound.class);
-        DenizenCore.commandRegistry.registerCommand(DeleteAudioCommand.class);
-        DenizenCore.commandRegistry.registerCommand(ActivationCommand.class);
         DenizenCore.commandRegistry.registerCommand(VoskCommand.class);
 
         getLogger().info("║ Initializing Denizen Tags ║");

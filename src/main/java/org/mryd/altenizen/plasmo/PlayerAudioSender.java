@@ -1,5 +1,6 @@
 package org.mryd.altenizen.plasmo;
 
+import lombok.extern.slf4j.Slf4j;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 import su.plo.voice.api.server.audio.provider.ArrayAudioFrameProvider;
 import su.plo.voice.api.server.audio.source.*;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+@Slf4j
 public final class PlayerAudioSender {
     public static HashMap<ServerAudioSource<?>, AudioSender> sources = new HashMap<>();
 
@@ -72,7 +74,7 @@ public final class PlayerAudioSender {
         };
     }
 
-    private static short[] convertBytesToShorts(byte[] audioData) {
+    public static short[] convertBytesToShorts(byte[] audioData) {
         int shortArrayLength = audioData.length / 2;
         short[] samples = new short[shortArrayLength];
 
@@ -80,7 +82,7 @@ public final class PlayerAudioSender {
             int byteIndex = i * 2;
 
             if (byteIndex + 1 >= audioData.length) {
-                System.err.println("[WARNING] Incomplete sample at index " + i + " (insufficient bytes), skipping.");
+                log.error("[WARNING] Incomplete sample at index {} (insufficient bytes), skipping.", i);
                 break;
             }
 
