@@ -1,6 +1,7 @@
 package org.mryd.altenizen.plasmo;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.bukkit.Bukkit;
 import org.mryd.altenizen.Altenizen;
 import org.mryd.altenizen.customevent.bukkit.PlayerEndsSpeaking;
@@ -19,7 +20,6 @@ import su.plo.voice.api.encryption.EncryptionException;
 import su.plo.voice.api.event.EventPriority;
 import su.plo.voice.api.server.PlasmoVoiceServer;
 import su.plo.voice.api.server.audio.line.ServerSourceLine;
-import su.plo.voice.api.server.audio.source.ServerStaticSource;
 import su.plo.voice.api.server.event.audio.source.PlayerSpeakEndEvent;
 import su.plo.voice.api.server.event.audio.source.PlayerSpeakEvent;
 import su.plo.voice.server.player.BaseVoicePlayer;
@@ -43,6 +43,7 @@ import java.util.zip.ZipInputStream;
 
 import static org.mryd.altenizen.Altenizen.instance;
 
+@Slf4j
 @Addon(
         id = "pv-addon-altenizen",
         name = "Altenizen",
@@ -62,7 +63,6 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
     public PlasmoVoiceServer getVoice() {
         return voiceServer;
     }
-//    private ProximityServerActivationHelper proximityHelper;
 
     @Getter
     public static ServerSourceLine sourceLine;
@@ -80,7 +80,7 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
 
             File modelPath = new File(modelDir, Objects.requireNonNull(instance.getConfig().getString("vosk.model-name")));
             if (!modelPath.exists()) {
-                System.out.println("Модель не найдена, начинаем загрузку...");
+                log.info("Модель не найдена, начинаем загрузку...");
                 downloadAndExtractModel(instance.getConfig().getString("vosk.model-link"), modelDir);
             }
 
@@ -125,9 +125,15 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
 
 
 
+    private final ConcurrentHashMap<String, AudioDecoder> decoders = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ByteArrayOutputStream> playerAudioBuffer = new ConcurrentHashMap<>();
 
+    public AudioDecoder getOrCreateDecoder(String playerId) {
+        return decoders.computeIfAbsent(playerId, id -> voiceServer.createOpusDecoder(false));
+    }
+
     public void releaseResources(String playerId) {
+        Optional.ofNullable(decoders.remove(playerId)).ifPresent(AudioDecoder::close);
         Optional.ofNullable(playerAudioBuffer.remove(playerId)).ifPresent(buffer -> {
             try {
                 buffer.close();
@@ -142,21 +148,36 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
         var player = (BaseVoicePlayer<?>) event.getPlayer();
         String playerId = player.getInstance().getName();
 
-        ByteArrayOutputStream audioStream = playerAudioBuffer.computeIfAbsent(playerId, id -> new ByteArrayOutputStream());
-        try {
-            audioStream.write(encryptedFrame);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to write encrypted audio data", e);
-        }
+        AudioDecoder decoder = getOrCreateDecoder(playerId);
 
-        PlayerSpeaksEvent speaksEvent = new PlayerSpeaksEvent(
-                player.getInstance().getInstance(),
-                encryptedFrame,
-                event
-        );
-        Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
-                Bukkit.getPluginManager().callEvent(speaksEvent)
-        );
+        try {
+            byte[] decryptedFrame = encryption.decrypt(encryptedFrame);
+            short[] audioFrame = decoder.decode(decryptedFrame);
+
+            ByteBuffer byteBuffer = ByteBuffer.allocate(audioFrame.length * 2).order(ByteOrder.LITTLE_ENDIAN);
+            for (short sample : audioFrame) {
+                byteBuffer.putShort(sample);
+            }
+            byte[] audioBytes = byteBuffer.array();
+
+            ByteArrayOutputStream audioStream = playerAudioBuffer.computeIfAbsent(playerId, id -> new ByteArrayOutputStream());
+            try {
+                audioStream.write(audioBytes);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Send event immediately without buffering
+            if (audioBytes.length > 0) {
+                PlayerSpeaksEvent speaksEvent = new PlayerSpeaksEvent(player.getInstance().getInstance(), audioBytes, event);
+                Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
+                        Bukkit.getPluginManager().callEvent(speaksEvent)
+                );
+            }
+
+        } catch (EncryptionException | CodecException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void onPlayerSpeakEnd(PlayerSpeakEndEvent event) {
@@ -165,11 +186,10 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
 
         ByteArrayOutputStream audioStream = playerAudioBuffer.get(playerId);
         if (audioStream != null && audioStream.size() > 0) {
-            byte[] encryptedAudio = audioStream.toByteArray();
-
+            byte[] audioBytes = audioStream.toByteArray();
             PlayerEndsSpeaking endEvent = new PlayerEndsSpeaking(
                     player.getInstance().getInstance(),
-                    encryptedAudio,
+                    audioBytes,
                     event.getPacket().getActivationId()
             );
             Bukkit.getScheduler().runTaskAsynchronously(instance, () ->
@@ -179,7 +199,6 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
 
         releaseResources(playerId);
     }
-
 
 
     public static void saveToWav(byte[] audioBytes, String dir) throws IOException {
@@ -194,43 +213,36 @@ public final class PlasmoVoiceAddon implements AddonInitializer {
     }
 
 
-    public static CompletableFuture<String> recognizeFromBytesAsync(byte[] encryptedAudioBytes) {
+    public static CompletableFuture<String> recognizeFromBytesAsync(byte[] audioBytes) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                AudioDecoder decoder = Altenizen.getPLASMO_VOICE_ADDON().voiceServer.createOpusDecoder(false);
-                byte[] decryptedFrame = encryption.decrypt(encryptedAudioBytes);
-                short[] audioSamples = decoder.decode(decryptedFrame);
+                Model model = voskModel;
 
-                byte[] pcmBytes = new byte[audioSamples.length * 2];
-                for (int i = 0; i < audioSamples.length; i++) {
-                    pcmBytes[i * 2] = (byte) (audioSamples[i] & 0xFF);
-                    pcmBytes[i * 2 + 1] = (byte) ((audioSamples[i] >> 8) & 0xFF);
-                }
+                InputStream audioStream = new ByteArrayInputStream(audioBytes);
 
-                InputStream stream = new ByteArrayInputStream(pcmBytes);
                 AudioFormat format = new AudioFormat(48000, 16, 1, true, false);
-                AudioInputStream inputStream = new AudioInputStream(stream, format, pcmBytes.length / 2);
+                AudioInputStream audioInputStream = new AudioInputStream(audioStream, format, audioBytes.length);
 
-                Recognizer recognizer = new Recognizer(voskModel, 48000);
+                Recognizer recognizer = new Recognizer(model, 48000);
+
                 byte[] buffer = new byte[4000];
                 StringBuilder result = new StringBuilder();
 
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    if (recognizer.acceptWaveForm(buffer, bytesRead)) {
+                while (audioInputStream.read(buffer) != -1) {
+                    if (recognizer.acceptWaveForm(buffer, buffer.length)) {
                         result.append(recognizer.getResult());
                     }
                 }
 
-                result.append(recognizer.getFinalResult());
-                return result.toString();
+                return recognizer.getFinalResult();
 
-            } catch (IOException | CodecException | EncryptionException e) {
-                throw new RuntimeException("Failed to process audio", e);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
             }
+
+            return null;
         });
     }
-
 
     private void downloadAndExtractModel(String modelUrl, File outputDir) throws IOException {
         URL url = new URL(modelUrl);
